@@ -1,3 +1,7 @@
+# Proyecto SportsHausen
+
+Este proyecto es destinado al ramo Taller de Programación, de la Carrera de Analista Programador, del Instituto Profesional DUOC UC, Sede San Joaquín, Año 2026, Primer Semestre. Este proyecto es para fines académicos, siendo este el único uso apropiado del mismo.
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
