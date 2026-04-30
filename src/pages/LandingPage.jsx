@@ -38,12 +38,12 @@ export const LandingPage = () => {
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link
                   to="/signup"
-                  className="flex items-center justify-center gap-2 px-8 py-4 bg-sportshausen-red text-white font-bold text-lg rounded-lg hover:bg-red-700 transition-all shadow-lg hover:shadow-xl hover:-translate-y-1"
+                  className="flex items-center justify-center gap-2 px-8 py-4 bg-sportshausen-red text-sportshausen-dark font-bold text-lg rounded-lg hover:bg-red-700 transition-all shadow-lg hover:shadow-xl hover:-translate-y-1"
                 >
                   Comenzar Ahora
                   <ArrowRight size={22} />
                 </Link>
-                <button className="flex items-center justify-center gap-2 px-8 py-4 border-2 border-sportshausen-red text-sportshausen-red font-bold text-lg rounded-lg hover:bg-red-50 transition-all">
+                <button className="flex items-center justify-center gap-2 px-8 py-4 bg-sportshausen-red text-sportshausen-dark font-bold text-lg rounded-lg hover:bg-red-700 transition-all shadow-lg hover:shadow-xl hover:-translate-y-1">
                   Ver Demo
                   <span>→</span>
                 </button>
@@ -276,13 +276,13 @@ export const LandingPage = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               to="/signup"
-              className="px-10 py-4 bg-white text-sportshausen-red font-bold text-lg rounded-lg hover:bg-gray-100 transition-all shadow-lg"
+              className="px-10 py-4 bg-sportshausen-gold text-sportshausen-dark font-bold text-lg rounded-lg hover:bg-yellow-500 transition-all shadow-lg"
             >
               Registrarme como Luchador
             </Link>
             <Link
               to="/signup"
-              className="px-10 py-4 border-2 border-white text-white font-bold text-lg rounded-lg hover:bg-white/10 transition-all"
+              className="px-10 py-4 bg-sportshausen-gold text-sportshausen-dark font-bold text-lg rounded-lg hover:bg-yellow-500 transition-all shadow-lg"
             >
               Registrarme como Booker
             </Link>
