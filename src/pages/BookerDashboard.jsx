@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
 import { Search, LogOut, Heart, Star, MapPin } from 'lucide-react';
 import Header from '../components/Header';
+import SideNav from '../components/SideNav';
 import Footer from '../components/Footer';
 
 export const BookerDashboard = () => {
   const [activeTab, setActiveTab] = useState('home');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchFilters, setSearchFilters] = useState({
     city: '',
     experience: '',
     weight: '',
   });
+  const currentUser = { displayName: 'User Booker' };
 
   const luchadores = [
     { id: 1, nombre: 'Phoenix', ciudad: 'Santiago', exp: 8, rating: 4.8, img: '🔥' },
@@ -33,25 +36,7 @@ export const BookerDashboard = () => {
       <Header userType="booker" />
 
       <div className="flex h-screen pt-16">
-        {/* Sidebar */}
-        <aside className="w-64 bg-white border-r border-gray-200 hidden md:block p-6 space-y-2">
-          {sidebarItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className={`w-full text-left px-4 py-3 rounded-lg font-semibold transition-colors ${
-                activeTab === item.id ? 'bg-sportshausen-red text-white' : 'hover:bg-gray-100'
-              }`}
-            >
-              {item.icon} {item.label}
-            </button>
-          ))}
-          <button className="w-full text-left px-4 py-3 rounded-lg font-semibold text-red-600 hover:bg-red-50 transition-colors mt-8 flex items-center gap-2">
-            <LogOut size={18} />
-            Cerrar Sesión
-          </button>
-        </aside>
-
+        <SideNav active={activeTab} onSelect={(id)=>setActiveTab(id)} isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
         {/* Main Content */}
         <main className="flex-1 overflow-auto p-8">
           {activeTab === 'home' && (
@@ -170,6 +155,17 @@ export const BookerDashboard = () => {
             </div>
           )}
         </main>
+        {/* Right welcome panel */}
+        <aside className="w-72 hidden lg:block p-6">
+          <div className="bg-white rounded-lg shadow-sm p-6 sticky top-24">
+            <p className="text-sm text-gray-500">Bienvenido de Vuelta,</p>
+            <h3 className="text-xl font-bold text-sportshausen-dark mt-2">{currentUser.displayName}</h3>
+            <p className="text-sm text-gray-600 mt-3">Administra eventos y descubre talento desde aquí.</p>
+            <div className="mt-4">
+              <button className="w-full btn-primary">Ir a Mi Perfil</button>
+            </div>
+          </div>
+        </aside>
       </div>
 
       <Footer />

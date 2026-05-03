@@ -86,6 +86,42 @@
   background-color: rgba(230, 57, 70, 0.1);
 }
 
+/* High contrast button for better visibility */
+.btn-contrast {
+  padding: 0.75rem 1.25rem;
+  background-color: var(--secondary);
+  color: white;
+  border-radius: 0.5rem;
+  font-weight: 700;
+  border: 2px solid rgba(0,0,0,0.08);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+  cursor: pointer;
+}
+.btn-contrast:hover {
+  transform: translateY(-2px);
+  background-color: #111118;
+}
+
+/* Subtle button: animation like register but lower contrast to fit the page */
+.btn-subtle {
+  padding: 0.6rem 1.25rem;
+  background: white;
+  color: var(--primary);
+  border: 2px solid rgba(230, 57, 70, 0.15);
+  border-radius: 9999px;
+  font-weight: 600;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.15s ease;
+  cursor: pointer;
+}
+.btn-subtle:hover {
+  transform: translateY(-2px);
+  background-color: rgba(230,57,70,0.06);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+}
+.btn-subtle:active {
+  transform: translateY(0);
+}
+
 .card-shadow {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   border-radius: 1rem;
@@ -115,4 +151,14 @@ body {
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Bebas Neue', 'Montserrat', sans-serif;
   font-weight: bold;
+}
+
+/* Left drawer open: shift main content to the right to mimic YouTube */
+.left-drawer-open .main-content {
+  transform: translateX(16rem);
+}
+
+/* Ensure drawer has smooth transform performance */
+.main-content {
+  will-change: transform;
 }

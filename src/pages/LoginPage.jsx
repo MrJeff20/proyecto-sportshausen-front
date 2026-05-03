@@ -17,10 +17,22 @@ export const LoginPage = () => {
       setError('Por favor completa todos los campos');
       return;
     }
-    // Aquí iría la lógica real de login
-    // Por ahora, simular login exitoso
-    localStorage.setItem('userType', 'luchador');
-    navigate('/feed/luchador');
+    // Credenciales forzadas para entorno de prueba
+    const validEmail = 'test@test.com';
+    const validPassword = '123456abc';
+    if (email === validEmail && password === validPassword) {
+      localStorage.setItem('authenticated', 'true');
+      localStorage.setItem('userType', 'luchador');
+      // For testing, set a user id
+      localStorage.setItem('userId', '1');
+      setError('');
+      // ensure navigation occurs after storage update
+      navigate('/dashboard/luchador', { replace: true });
+      // fallback: force full reload to the dashboard if SPA navigation fails
+      try { window.location.replace('/dashboard/luchador'); } catch (e) {}
+    } else {
+      setError('Credenciales inválidas. Usa test@test.com / 123456abc');
+    }
   };
 
   return (
