@@ -94,8 +94,8 @@ export const Header = ({ userType = 'guest', isOpen: propIsOpen, setIsOpen: prop
                 }
               } catch (e) { navigate('/'); }
             }} className="flex items-center gap-2 hover:opacity-80 transition-opacity flex-shrink-0">
-              <div className="w-10 h-10 bg-gradient-to-br from-sportshausen-red to-red-700 rounded-lg flex items-center justify-center shadow-md">
-                <span className="text-white font-black text-lg">S</span>
+              <div className="w-10 h-10 rounded-lg overflow-hidden flex items-center justify-center shadow-md bg-white">
+                <img src="/src/assets/logo_mascara.png" alt="SportsHausen" className="w-full h-full object-cover" />
               </div>
               <span className="hidden sm:block text-xl font-bold text-sportshausen-dark font-display">
                 SportsHausen
