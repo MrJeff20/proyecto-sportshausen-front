@@ -5,6 +5,15 @@ import SideNav from './SideNav';
 
 export const Header = ({ userType = 'guest', isOpen: propIsOpen, setIsOpen: propSetIsOpen, onLogout = () => {} }) => {
   const navigate = useNavigate();
+  const handleLogout = () => {
+    try {
+      localStorage.removeItem('authenticated');
+      localStorage.removeItem('userType');
+      localStorage.removeItem('userId');
+    } catch (e) {}
+    try { if (typeof onLogout === 'function') onLogout(); } catch (e) {}
+    navigate('/login');
+  };
   const [internalOpen, setInternalOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [leftMenuOpen, setLeftMenuOpen] = useState(false);
@@ -13,9 +22,11 @@ export const Header = ({ userType = 'guest', isOpen: propIsOpen, setIsOpen: prop
   // Show left drawer for authenticated users on app pages, but hide on landing and login
   const showLeftDrawer = authed && !['/', '/login'].includes(location.pathname);
   const userId = typeof window !== 'undefined' ? (localStorage.getItem('userId') || '1') : '1';
+  const userTypeStored = typeof window !== 'undefined' ? localStorage.getItem('userType') : null;
+  const dashboardPath = userTypeStored === 'luchador' ? '/dashboard/luchador' : userTypeStored === 'agrupacion' ? '/dashboard/agrupacion' : '/dashboard';
   const menuItems = [
     { label: 'Perfil', to: `/perfil/${userId}` },
-    { label: 'Dashboard', to: '/dashboard/luchador' },
+    { label: 'Dashboard', to: dashboardPath },
     { label: 'Calendario', to: null },
     { label: 'Eventos', to: null },
     { label: 'Ofertas', to: null },
@@ -74,9 +85,9 @@ export const Header = ({ userType = 'guest', isOpen: propIsOpen, setIsOpen: prop
             <button onClick={() => {
               try {
                 const authed = localStorage.getItem('authenticated') === 'true';
-                const userTypeStored = localStorage.getItem('userType');
                 if (authed) {
                   if (userTypeStored === 'luchador') navigate('/dashboard/luchador');
+                  else if (userTypeStored === 'agrupacion') navigate('/dashboard/agrupacion');
                   else navigate('/dashboard');
                 } else {
                   navigate('/');
@@ -148,12 +159,12 @@ export const Header = ({ userType = 'guest', isOpen: propIsOpen, setIsOpen: prop
                     U
                   </button>
                   {/* Dropdown menu */}
-                  {menuOpen && (
+                      {menuOpen && (
                     <div className="absolute right-0 mt-12 w-48 bg-white rounded-md shadow-lg border border-gray-100 z-50">
-                      <button onClick={() => { setMenuOpen(false); navigate('/dashboard/luchador'); }} className="w-full text-left px-4 py-2 hover:bg-gray-50">Mi Perfil</button>
+                      <button onClick={() => { setMenuOpen(false); navigate(dashboardPath); }} className="w-full text-left px-4 py-2 hover:bg-gray-50">Mi Perfil</button>
                       <button onClick={() => { setMenuOpen(false); navigate('/settings'); }} className="w-full text-left px-4 py-2 hover:bg-gray-50">Ajustes</button>
                       <div className="border-t border-gray-100" />
-                      <button onClick={() => { setMenuOpen(false); onLogout(); }} className="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-50">Cerrar sesión</button>
+                      <button onClick={() => { setMenuOpen(false); handleLogout(); }} className="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-50">Cerrar sesión</button>
                     </div>
                   )}
                 </div>

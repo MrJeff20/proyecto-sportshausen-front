@@ -23,16 +23,25 @@ export const LoginPage = () => {
     if (email === validEmail && password === validPassword) {
       localStorage.setItem('authenticated', 'true');
       localStorage.setItem('userType', 'luchador');
-      // For testing, set a user id
       localStorage.setItem('userId', '1');
       setError('');
-      // ensure navigation occurs after storage update
       navigate('/dashboard/luchador', { replace: true });
-      // fallback: force full reload to the dashboard if SPA navigation fails
       try { window.location.replace('/dashboard/luchador'); } catch (e) {}
-    } else {
-      setError('Credenciales inválidas. Usa test@test.com / 123456abc');
+      return;
     }
+
+    // Cuenta especial para agrupación
+    if (email === 'test2@test.com' && password === validPassword) {
+      localStorage.setItem('authenticated', 'true');
+      localStorage.setItem('userType', 'agrupacion');
+      localStorage.setItem('userId', '2');
+      setError('');
+      navigate('/dashboard/agrupacion', { replace: true });
+      try { window.location.replace('/dashboard/agrupacion'); } catch (e) {}
+      return;
+    }
+
+    setError('Credenciales inválidas. Usa test@test.com / 123456abc');
   };
 
   return (
