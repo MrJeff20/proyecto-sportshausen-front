@@ -4,6 +4,7 @@ import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import LuchadorDashboard from './pages/LuchadorDashboard';
 import AgrupacionDashboard from './pages/AgrupacionDashboard';
+import PanelDeLuchador from './pages/PanelDeLuchador';
 import PerfilLuchador from './pages/PerfilLuchador';
 import NotFound from './pages/NotFound';
 import { Navigate } from 'react-router-dom';
@@ -20,6 +21,9 @@ function App() {
         } />
         <Route path="/dashboard/agrupacion" element={
           localStorage.getItem('authenticated') === 'true' ? <AgrupacionDashboard /> : <Navigate to="/login" />
+        } />
+        <Route path="/panel/luchador" element={
+          localStorage.getItem('authenticated') === 'true' ? <PanelDeLuchador /> : <Navigate to="/login" />
         } />
         <Route path="/perfil/:id" element={
           localStorage.getItem('authenticated') === 'true' ? <PerfilLuchador /> : <Navigate to="/login" />

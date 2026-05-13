@@ -217,53 +217,6 @@ export const LandingPage = () => {
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section className="py-24 px-4 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-display font-bold text-sportshausen-dark mb-4">
-              Lo Que Dicen Nuestros Usuarios
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                name: 'Carlos "El León" Rodríguez',
-                role: 'Luchador Profesional',
-                text: 'SportsHausen cambió mi carrera. Ahora consigo eventos de calidad sin intermediarios.',
-                rating: 5
-              },
-              {
-                name: 'María González',
-                role: 'Booker - Agrupación Elite',
-                text: 'Encontrar talentos verificados es mucho más fácil. Ahorra tiempo y garantiza profesionalismo.',
-                rating: 5
-              },
-              {
-                name: 'Jorge "La Tormenta" Silva',
-                role: 'Luchador Profesional',
-                text: 'El calendario integrado es increíble. Mis clientes ven mi disponibilidad al instante.',
-                rating: 5
-              }
-            ].map((testimonial, i) => (
-              <div key={i} className="border border-gray-200 rounded-2xl p-8 hover:shadow-lg transition-all">
-                <div className="flex gap-1 mb-4">
-                  {[...Array(testimonial.rating)].map((_, j) => (
-                    <Star key={j} size={18} className="fill-sportshausen-gold text-sportshausen-gold" />
-                  ))}
-                </div>
-                <p className="text-gray-700 mb-6">"{testimonial.text}"</p>
-                <div>
-                  <p className="font-bold text-sportshausen-dark">{testimonial.name}</p>
-                  <p className="text-sm text-sportshausen-red font-semibold">{testimonial.role}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Final CTA */}
       <section className="py-24 px-4 bg-gradient-to-r from-sportshausen-red to-red-700">
         <div className="max-w-4xl mx-auto text-center text-white space-y-8">
@@ -276,11 +229,7 @@ export const LandingPage = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               to="/signup"
-<<<<<<< HEAD:src/pages/LandingPage.jsx
-              className="px-10 py-4 bg-sportshausen-gold text-sportshausen-dark font-bold text-lg rounded-lg hover:bg-yellow-500 transition-all shadow-lg"
-=======
               className="px-10 py-4 bg-white text-sportshausen-red font-bold text-lg rounded-lg hover:bg-gray-100 transition-all shadow-lg text-dark"
->>>>>>> d83be9d (Dockers Sport Hausen - Frontend):proyecto-sportshausen-front/src/pages/LandingPage.jsx
             >
               Registrarme como Luchador
             </Link>

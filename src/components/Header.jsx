@@ -27,6 +27,7 @@ export const Header = ({ userType = 'guest', isOpen: propIsOpen, setIsOpen: prop
   const menuItems = [
     { label: 'Perfil', to: `/perfil/${userId}` },
     { label: 'Dashboard', to: dashboardPath },
+    { label: 'Panel de Luchador', to: '/panel/luchador' },
     { label: 'Calendario', to: null },
     { label: 'Eventos', to: null },
     { label: 'Ofertas', to: null },
@@ -160,8 +161,9 @@ export const Header = ({ userType = 'guest', isOpen: propIsOpen, setIsOpen: prop
                   </button>
                   {/* Dropdown menu */}
                       {menuOpen && (
-                    <div className="absolute right-0 mt-12 w-48 bg-white rounded-md shadow-lg border border-gray-100 z-50">
+                    <div className="absolute right-0 mt-12 w-56 bg-white rounded-md shadow-lg border border-gray-100 z-50">
                       <button onClick={() => { setMenuOpen(false); navigate(dashboardPath); }} className="w-full text-left px-4 py-2 hover:bg-gray-50">Mi Perfil</button>
+                      <button onClick={() => { setMenuOpen(false); navigate('/panel/luchador'); }} className="w-full text-left px-4 py-2 hover:bg-gray-50">Panel de Luchador</button>
                       <button onClick={() => { setMenuOpen(false); navigate('/settings'); }} className="w-full text-left px-4 py-2 hover:bg-gray-50">Ajustes</button>
                       <div className="border-t border-gray-100" />
                       <button onClick={() => { setMenuOpen(false); handleLogout(); }} className="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-50">Cerrar sesión</button>
