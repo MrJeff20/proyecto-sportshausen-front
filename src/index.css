@@ -55,6 +55,17 @@
   box-shadow: 0 4px 12px rgba(230, 57, 70, 0.3);
 }
 
+.bg-sportshausen-red {
+  background-color: #c91c34 !important;
+}
+.bg-sportshausen-red:hover {
+  background-color: white !important;
+}
+
+.text-dark {
+  color: #49494b !important;
+}
+
 .btn-secondary {
   padding: 0.75rem 1.5rem;
   background-color: var(--secondary);

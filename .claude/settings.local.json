@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(docker compose -f proyecto-sportshausen-front\\\\docker-compose.yml --project-directory proyecto-sportshausen-front up --build -d)",
+      "PowerShell(docker compose -f proyecto-sportshausen-front\\\\docker-compose.yml --project-directory proyecto-sportshausen-front ps)",
+      "PowerShell(docker compose -f proyecto-sportshausen-front\\\\docker-compose.yml --project-directory proyecto-sportshausen-front logs --tail=30 frontend)"
+    ]
+  }
+}

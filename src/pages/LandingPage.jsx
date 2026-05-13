@@ -276,7 +276,11 @@ export const LandingPage = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               to="/signup"
+<<<<<<< HEAD:src/pages/LandingPage.jsx
               className="px-10 py-4 bg-sportshausen-gold text-sportshausen-dark font-bold text-lg rounded-lg hover:bg-yellow-500 transition-all shadow-lg"
+=======
+              className="px-10 py-4 bg-white text-sportshausen-red font-bold text-lg rounded-lg hover:bg-gray-100 transition-all shadow-lg text-dark"
+>>>>>>> d83be9d (Dockers Sport Hausen - Frontend):proyecto-sportshausen-front/src/pages/LandingPage.jsx
             >
               Registrarme como Luchador
             </Link>
