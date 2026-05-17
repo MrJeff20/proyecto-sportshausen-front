@@ -3,10 +3,12 @@ import { Eye, EyeOff, ArrowLeft, UserPlus, Check } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import { useAuth } from '../context/AuthContext';
 
 export const SignupPage = () => {
   const [userType, setUserType] = useState('luchador'); // 'luchador' o 'booker'
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -16,6 +18,7 @@ export const SignupPage = () => {
   });
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { signup } = useAuth();
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -25,33 +28,51 @@ export const SignupPage = () => {
     }));
   };
 
-  const handleSignup = (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
 
     if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
       setError('Por favor completa todos los campos');
+      setLoading(false);
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
       setError('Las contraseñas no coinciden');
+      setLoading(false);
       return;
     }
 
     if (formData.password.length < 6) {
       setError('La contraseña debe tener al menos 6 caracteres');
+      setLoading(false);
       return;
     }
 
     if (!formData.terms) {
       setError('Debes aceptar los términos y condiciones');
+      setLoading(false);
       return;
     }
 
-    // Aquí iría la lógica real de registro
-    localStorage.setItem('userType', userType);
-    navigate(userType === 'luchador' ? '/feed/luchador' : '/feed/booker');
+    try {
+      const result = await signup(formData.name, formData.email, formData.password);
+      
+      if (result.success) {
+        // Guardar tipo de usuario
+        localStorage.setItem('userType', userType);
+        // Redirigir al dashboard
+        navigate(`/dashboard/${userType}`, { replace: true });
+      } else {
+        setError(result.error || 'Error al crear la cuenta');
+      }
+    } catch (err) {
+      setError(err.message || 'Error de conexión con el servidor');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -200,9 +221,10 @@ export const SignupPage = () => {
               {/* Submit Button */}
               <button
                 type="submit"
-                className="w-full btn-primary py-3 text-lg font-bold mt-6"
+                disabled={loading}
+                className="w-full btn-primary py-3 text-lg font-bold mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Crear Cuenta
+                {loading ? 'Creando cuenta...' : 'Crear Cuenta'}
               </button>
             </form>
 
