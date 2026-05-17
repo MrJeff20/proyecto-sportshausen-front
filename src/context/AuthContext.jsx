@@ -13,13 +13,19 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const savedToken = localStorage.getItem('authToken');
     const savedUser = localStorage.getItem('user');
+    const savedUserType = localStorage.getItem('userType');
 
     if (savedToken) {
       setToken(savedToken);
     }
     if (savedUser) {
       try {
-        setUser(JSON.parse(savedUser));
+        const parsedUser = JSON.parse(savedUser);
+        // Asegurar que el user tenga el role
+        if (!parsedUser.role && savedUserType) {
+          parsedUser.role = savedUserType;
+        }
+        setUser(parsedUser);
       } catch (e) {
         console.error('Error parsing saved user:', e);
         localStorage.removeItem('user');
@@ -35,12 +41,17 @@ export const AuthProvider = ({ children }) => {
       const response = await authAPI.login(email, password);
 
       const authToken = response.data.authToken || response.data.token;
-      const userData = response.data.user || response.data;
+      let userData = response.data.user || response.data;
+
+      // Asegurar que userData tenga el role
+      if (!userData.role) {
+        userData.role = userData.type || 'luchador';
+      }
 
       // Guardar en localStorage
       localStorage.setItem('authToken', authToken);
       localStorage.setItem('user', JSON.stringify(userData));
-      localStorage.setItem('userType', userData.type || 'luchador');
+      localStorage.setItem('userType', userData.role);
       localStorage.setItem('userId', userData.id);
       localStorage.setItem('authenticated', 'true');
 
@@ -64,7 +75,12 @@ export const AuthProvider = ({ children }) => {
       const response = await authAPI.signup(name, email, password, role);
 
       const authToken = response.data.authToken || response.data.token;
-      const userData = response.data.user || response.data;
+      let userData = response.data.user || response.data;
+
+      // Asegurar que userData tenga el role
+      if (!userData.role) {
+        userData.role = role;
+      }
 
       // Guardar en localStorage
       localStorage.setItem('authToken', authToken);
