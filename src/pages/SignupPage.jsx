@@ -6,7 +6,6 @@ import Footer from '../components/Footer';
 import { useAuth } from '../context/AuthContext';
 
 export const SignupPage = () => {
-  const [userType, setUserType] = useState('luchador'); // 'luchador' o 'booker'
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -14,6 +13,7 @@ export const SignupPage = () => {
     email: '',
     password: '',
     confirmPassword: '',
+    role: 'luchador',
     terms: false,
   });
   const [error, setError] = useState('');
@@ -58,13 +58,11 @@ export const SignupPage = () => {
     }
 
     try {
-      const result = await signup(formData.name, formData.email, formData.password);
+      const result = await signup(formData.name, formData.email, formData.password, formData.role);
       
       if (result.success) {
-        // Guardar tipo de usuario
-        localStorage.setItem('userType', userType);
         // Redirigir al dashboard
-        navigate(`/dashboard/${userType}`, { replace: true });
+        navigate(`/dashboard/${formData.role}`, { replace: true });
       } else {
         setError(result.error || 'Error al crear la cuenta');
       }
@@ -102,28 +100,21 @@ export const SignupPage = () => {
               </p>
             </div>
 
-            {/* User Type Selection */}
-            <div className="grid grid-cols-2 gap-4 mb-8">
-              <button
-                onClick={() => setUserType('luchador')}
-                className={`p-4 rounded-lg border-2 transition-all font-semibold ${
-                  userType === 'luchador'
-                    ? 'border-sportshausen-red bg-red-50 text-sportshausen-red'
-                    : 'border-gray-200 text-gray-600 hover:border-sportshausen-red'
-                }`}
+            {/* User Role Selection */}
+            <div className="mb-8">
+              <label className="block text-sm font-semibold text-sportshausen-dark mb-2">
+                ¿Cuál es tu rol?
+              </label>
+              <select
+                name="role"
+                value={formData.role}
+                onChange={handleInputChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 ring-sportshausen-red outline-none transition-all bg-white"
               >
-                🥋 Soy Luchador
-              </button>
-              <button
-                onClick={() => setUserType('booker')}
-                className={`p-4 rounded-lg border-2 transition-all font-semibold ${
-                  userType === 'booker'
-                    ? 'border-sportshausen-red bg-red-50 text-sportshausen-red'
-                    : 'border-gray-200 text-gray-600 hover:border-sportshausen-red'
-                }`}
-              >
-                📋 Soy Booker
-              </button>
+                <option value="luchador">🥋 Luchador</option>
+                <option value="booker">📋 Booker</option>
+                <option value="agrupación">🏢 Agrupación</option>
+              </select>
             </div>
 
             {/* Form */}
@@ -131,14 +122,14 @@ export const SignupPage = () => {
               {/* Name Field */}
               <div>
                 <label className="block text-sm font-semibold text-sportshausen-dark mb-2">
-                  {userType === 'luchador' ? 'Nombre Artístico' : 'Nombre de Agrupación'}
+                  {formData.role === 'luchador' ? 'Nombre Artístico' : formData.role === 'booker' ? 'Tu Nombre' : 'Nombre de la Agrupación'}
                 </label>
                 <input
                   type="text"
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  placeholder={userType === 'luchador' ? 'Tu alias...' : 'Nombre de tu agrupación...'}
+                  placeholder={formData.role === 'luchador' ? 'Tu alias...' : formData.role === 'booker' ? 'Tu nombre...' : 'Nombre de tu agrupación...'}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 ring-sportshausen-red outline-none transition-all"
                 />
               </div>

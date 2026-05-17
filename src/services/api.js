@@ -49,10 +49,10 @@ export const authAPI = {
       body: { email, password },
     }),
 
-  signup: (name, email, password) =>
+  signup: (name, email, password, role = 'luchador') =>
     apiCall('/auth/signup', {
       method: 'POST',
-      body: { name, email, password },
+      body: { name, email, password, role },
     }),
 
   logout: () =>

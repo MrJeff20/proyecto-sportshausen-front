@@ -57,11 +57,11 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const signup = async (name, email, password) => {
+  const signup = async (name, email, password, role = 'luchador') => {
     setLoading(true);
     setError(null);
     try {
-      const response = await authAPI.signup(name, email, password);
+      const response = await authAPI.signup(name, email, password, role);
 
       const authToken = response.data.authToken || response.data.token;
       const userData = response.data.user || response.data;
@@ -69,7 +69,7 @@ export const AuthProvider = ({ children }) => {
       // Guardar en localStorage
       localStorage.setItem('authToken', authToken);
       localStorage.setItem('user', JSON.stringify(userData));
-      localStorage.setItem('userType', userData.type || 'luchador');
+      localStorage.setItem('userType', role);
       localStorage.setItem('userId', userData.id);
       localStorage.setItem('authenticated', 'true');
 
