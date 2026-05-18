@@ -3,19 +3,24 @@ import { Eye, EyeOff, ArrowLeft, UserPlus, Check } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import { useAuth } from '../context/AuthContext';
+import WelcomeModal from '../components/WelcomeModal';
 
 export const SignupPage = () => {
-  const [userType, setUserType] = useState('luchador'); // 'luchador' o 'booker'
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
     confirmPassword: '',
+    role: 'luchador',
     terms: false,
   });
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { signup } = useAuth();
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -25,33 +30,91 @@ export const SignupPage = () => {
     }));
   };
 
-  const handleSignup = (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
+    setShowWelcomeModal(false);
 
     if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
       setError('Por favor completa todos los campos');
+      setLoading(false);
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
       setError('Las contraseñas no coinciden');
+      setLoading(false);
       return;
     }
 
-    if (formData.password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres');
+    if (formData.password.length < 8) {
+      setError('La contraseña debe tener al menos 8 caracteres');
+      setLoading(false);
       return;
     }
 
     if (!formData.terms) {
       setError('Debes aceptar los términos y condiciones');
+      setLoading(false);
       return;
     }
 
-    // Aquí iría la lógica real de registro
-    localStorage.setItem('userType', userType);
-    navigate(userType === 'luchador' ? '/feed/luchador' : '/feed/booker');
+    try {
+      // Normalizar rol: agrupación -> agrupacion
+      let normalizedRole = formData.role ? formData.role.toLowerCase().trim() : 'luchador';
+      if (normalizedRole === 'agrupación') normalizedRole = 'agrupacion';
+      
+      console.log('📝 SIGNUP - Iniciando registro para rol:', normalizedRole, '(original:', formData.role + ')');
+      const result = await signup(formData.name, formData.email, formData.password, normalizedRole);
+      
+      console.log('📝 SIGNUP - Resultado:', result.success ? '✅ exitoso' : '❌ fallido');
+      
+      if (result.success) {
+        // Mostrar modal de bienvenida
+        setShowWelcomeModal(true);
+        
+        // Redirigir al dashboard después de que se cierre el modal
+        const redirectTimeout = setTimeout(() => {
+          // Verificar qué se guardó en localStorage
+          const savedUserType = localStorage.getItem('userType');
+          const savedUser = localStorage.getItem('user');
+          
+          console.log('📝 SIGNUP - Datos en localStorage:');
+          console.log('  userType:', savedUserType);
+          console.log('  formData.role:', formData.role);
+          console.log('  user:', savedUser ? JSON.parse(savedUser) : 'null');
+          
+          if (!savedUserType) {
+            console.error('❌ ERROR: userType no fue guardado en localStorage');
+            setError('Error al guardar la sesión. Por favor intenta de nuevo.');
+            setShowWelcomeModal(false);
+            setLoading(false);
+            return;
+          }
+          
+          // Usar lo que se guardó en localStorage, no formData.role
+          const dashboardRole = savedUserType;
+          const dashboardUrl = `/dashboard/${dashboardRole}`;
+          
+          console.log('🚀 SIGNUP REDIRECT - Target URL:', dashboardUrl);
+          navigate(dashboardUrl, { replace: true });
+        }, 2500);
+        
+        // Limpiar timeout si el componente se desmonta
+        return () => clearTimeout(redirectTimeout);
+      } else {
+        const errorMsg = result.error || 'Error al crear la cuenta';
+        console.error('❌ SIGNUP ERROR:', errorMsg);
+        setError(errorMsg);
+        setLoading(false);
+      }
+    } catch (err) {
+      const errorMsg = err.message || 'Error de conexión con el servidor';
+      console.error('❌ SIGNUP EXCEPTION:', errorMsg);
+      setError(errorMsg);
+      setLoading(false);
+    }
   };
 
   return (
@@ -81,43 +144,19 @@ export const SignupPage = () => {
               </p>
             </div>
 
-            {/* User Type Selection */}
-            <div className="grid grid-cols-2 gap-4 mb-8">
-              <button
-                onClick={() => setUserType('luchador')}
-                className={`p-4 rounded-lg border-2 transition-all font-semibold ${
-                  userType === 'luchador'
-                    ? 'border-sportshausen-red bg-red-50 text-sportshausen-red'
-                    : 'border-gray-200 text-gray-600 hover:border-sportshausen-red'
-                }`}
-              >
-                🥋 Soy Luchador
-              </button>
-              <button
-                onClick={() => setUserType('booker')}
-                className={`p-4 rounded-lg border-2 transition-all font-semibold ${
-                  userType === 'booker'
-                    ? 'border-sportshausen-red bg-red-50 text-sportshausen-red'
-                    : 'border-gray-200 text-gray-600 hover:border-sportshausen-red'
-                }`}
-              >
-                📋 Soy Booker
-              </button>
-            </div>
-
             {/* Form */}
             <form onSubmit={handleSignup} className="space-y-5">
               {/* Name Field */}
               <div>
                 <label className="block text-sm font-semibold text-sportshausen-dark mb-2">
-                  {userType === 'luchador' ? 'Nombre Artístico' : 'Nombre de Agrupación'}
+                  {formData.role === 'luchador' ? 'Nombre Artístico' : formData.role === 'booker' ? 'Tu Nombre' : 'Nombre de la Agrupación'}
                 </label>
                 <input
                   type="text"
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  placeholder={userType === 'luchador' ? 'Tu alias...' : 'Nombre de tu agrupación...'}
+                  placeholder={formData.role === 'luchador' ? 'Tu alias...' : formData.role === 'booker' ? 'Tu nombre...' : 'Nombre de tu agrupación...'}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 ring-sportshausen-red outline-none transition-all"
                 />
               </div>
@@ -176,6 +215,23 @@ export const SignupPage = () => {
                 />
               </div>
 
+              {/* User Role Selection */}
+              <div>
+                <label className="block text-sm font-semibold text-sportshausen-dark mb-2">
+                  ¿Cuál es tu rol?
+                </label>
+                <select
+                  name="role"
+                  value={formData.role}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 ring-sportshausen-red outline-none transition-all bg-white"
+                >
+                  <option value="luchador">🥋 Luchador</option>
+                  <option value="booker">📋 Booker</option>
+                  <option value="agrupacion">🏢 Agrupación</option>
+                </select>
+              </div>
+
               {/* Terms */}
               <label className="flex items-start gap-3 cursor-pointer">
                 <input
@@ -200,9 +256,10 @@ export const SignupPage = () => {
               {/* Submit Button */}
               <button
                 type="submit"
-                className="w-full btn-primary py-3 text-lg font-bold mt-6"
+                disabled={loading}
+                className="w-full btn-primary py-3 text-lg font-bold mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Crear Cuenta
+                {loading ? 'Creando cuenta...' : 'Crear Cuenta'}
               </button>
             </form>
 
@@ -234,6 +291,14 @@ export const SignupPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Welcome Modal */}
+      {showWelcomeModal && (
+        <WelcomeModal 
+          userName={formData.name}
+          onClose={() => setShowWelcomeModal(false)}
+        />
+      )}
 
       <Footer />
     </div>

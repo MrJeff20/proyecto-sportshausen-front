@@ -2,17 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { Menu, X, Bell, LogOut, LogIn, Home, Search, MessageCircle, Users, Briefcase } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import SideNav from './SideNav';
+import { useAuth } from '../context/AuthContext';
 
 export const Header = ({ userType = 'guest', isOpen: propIsOpen, setIsOpen: propSetIsOpen, onLogout = () => {} }) => {
   const navigate = useNavigate();
-  const handleLogout = () => {
+  const { logout } = useAuth();
+  
+  const handleLogout = async () => {
     try {
-      localStorage.removeItem('authenticated');
-      localStorage.removeItem('userType');
-      localStorage.removeItem('userId');
-    } catch (e) {}
+      await logout();
+    } catch (e) {
+      console.error('Error en logout:', e);
+    }
     try { if (typeof onLogout === 'function') onLogout(); } catch (e) {}
-    navigate('/login');
+    // Usar window.location.href para forzar navegación a la página principal
+    window.location.href = '/';
   };
   const [internalOpen, setInternalOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);

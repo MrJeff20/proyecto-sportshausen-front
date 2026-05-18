@@ -3,45 +3,67 @@ import { Eye, EyeOff, ArrowLeft, LogIn } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import { useAuth } from '../context/AuthContext';
+import WelcomeModal from '../components/WelcomeModal';
 
 export const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+  const [userName, setUserName] = useState('');
   const navigate = useNavigate();
+  const { login } = useAuth();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
+    setError('');
+    setLoading(true);
+
     if (!email || !password) {
       setError('Por favor completa todos los campos');
-      return;
-    }
-    // Credenciales forzadas para entorno de prueba
-    const validEmail = 'test@test.com';
-    const validPassword = '123456abc';
-    if (email === validEmail && password === validPassword) {
-      localStorage.setItem('authenticated', 'true');
-      localStorage.setItem('userType', 'luchador');
-      localStorage.setItem('userId', '1');
-      setError('');
-      navigate('/dashboard/luchador', { replace: true });
-      try { window.location.replace('/dashboard/luchador'); } catch (e) {}
+      setLoading(false);
       return;
     }
 
-    // Cuenta especial para agrupación
-    if (email === 'test2@test.com' && password === validPassword) {
-      localStorage.setItem('authenticated', 'true');
-      localStorage.setItem('userType', 'agrupacion');
-      localStorage.setItem('userId', '2');
-      setError('');
-      navigate('/dashboard/agrupacion', { replace: true });
-      try { window.location.replace('/dashboard/agrupacion'); } catch (e) {}
-      return;
+    try {
+      const result = await login(email, password);
+      
+      if (result.success) {
+        // Obtener nombre del usuario desde localStorage
+        const userNameFromStorage = localStorage.getItem('user');
+        let displayName = email;
+        
+        if (userNameFromStorage) {
+          try {
+            const userData = JSON.parse(userNameFromStorage);
+            displayName = userData.nombre_artistico || userData.name || email;
+          } catch (e) {
+            displayName = userNameFromStorage;
+          }
+        }
+        
+        setUserName(displayName);
+        setShowWelcomeModal(true);
+        
+        // Redirigir según el tipo de usuario (usar lo que se guardó en localStorage)
+        const userType = localStorage.getItem('userType') || 'luchador';
+        console.log('🚀 LOGIN REDIRECT - userType from localStorage:', userType);
+        setTimeout(() => {
+          const dashboardUrl = `/dashboard/${userType}`;
+          console.log('🚀 LOGIN REDIRECT - Target URL:', dashboardUrl);
+          navigate(dashboardUrl, { replace: true });
+        }, 2500);
+      } else {
+        setError(result.error || 'Error al iniciar sesión');
+      }
+    } catch (err) {
+      setError(err.message || 'Error de conexión con el servidor');
+    } finally {
+      setLoading(false);
     }
-
-    setError('Credenciales inválidas. Usa test@test.com / 123456abc');
   };
 
   return (
@@ -131,9 +153,10 @@ export const LoginPage = () => {
               {/* Submit Button */}
               <button
                 type="submit"
-                className="w-full btn-primary py-3 text-lg font-bold mt-6"
+                disabled={loading}
+                className="w-full btn-primary py-3 text-lg font-bold mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Ingresar
+                {loading ? 'Ingresando...' : 'Ingresar'}
               </button>
             </form>
 
@@ -179,6 +202,14 @@ export const LoginPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Welcome Modal */}
+      {showWelcomeModal && (
+        <WelcomeModal 
+          userName={userName}
+          onClose={() => setShowWelcomeModal(false)}
+        />
+      )}
 
       <Footer />
     </div>
