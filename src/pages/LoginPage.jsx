@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { useAuth } from '../context/AuthContext';
+import WelcomeModal from '../components/WelcomeModal';
 
 export const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -11,6 +12,8 @@ export const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+  const [userName, setUserName] = useState('');
   const navigate = useNavigate();
   const { login } = useAuth();
 
@@ -29,9 +32,30 @@ export const LoginPage = () => {
       const result = await login(email, password);
       
       if (result.success) {
-        // Redirigir según el tipo de usuario
+        // Obtener nombre del usuario desde localStorage
+        const userNameFromStorage = localStorage.getItem('user');
+        let displayName = email;
+        
+        if (userNameFromStorage) {
+          try {
+            const userData = JSON.parse(userNameFromStorage);
+            displayName = userData.nombre_artistico || userData.name || email;
+          } catch (e) {
+            displayName = userNameFromStorage;
+          }
+        }
+        
+        setUserName(displayName);
+        setShowWelcomeModal(true);
+        
+        // Redirigir según el tipo de usuario (usar lo que se guardó en localStorage)
         const userType = localStorage.getItem('userType') || 'luchador';
-        navigate(`/dashboard/${userType}`, { replace: true });
+        console.log('🚀 LOGIN REDIRECT - userType from localStorage:', userType);
+        setTimeout(() => {
+          const dashboardUrl = `/dashboard/${userType}`;
+          console.log('🚀 LOGIN REDIRECT - Target URL:', dashboardUrl);
+          navigate(dashboardUrl, { replace: true });
+        }, 2500);
       } else {
         setError(result.error || 'Error al iniciar sesión');
       }
@@ -178,6 +202,14 @@ export const LoginPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Welcome Modal */}
+      {showWelcomeModal && (
+        <WelcomeModal 
+          userName={userName}
+          onClose={() => setShowWelcomeModal(false)}
+        />
+      )}
 
       <Footer />
     </div>

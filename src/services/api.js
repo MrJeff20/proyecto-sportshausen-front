@@ -1,5 +1,8 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
+console.log('DEBUG: VITE_API_URL =', import.meta.env.VITE_API_URL);
+console.log('DEBUG: API_BASE_URL =', API_BASE_URL);
+
 /**
  * Realizar una llamada a la API
  */

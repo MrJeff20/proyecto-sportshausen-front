@@ -43,16 +43,29 @@ export const AuthProvider = ({ children }) => {
       const authToken = response.data.authToken || response.data.token;
       let userData = response.data.user || response.data;
 
-      // Asegurar que userData tenga el role
-      if (!userData.role) {
-        userData.role = userData.type || 'luchador';
-      }
+      // Log para debuggear
+      console.log('🔐 LOGIN RESPONSE DATA:', JSON.stringify(response.data, null, 2));
+      console.log('👤 USER DATA:', JSON.stringify(userData, null, 2));
+
+      // Asegurar que userData tenga el role - probar múltiples campos posibles
+      let userRole = userData.role || userData.tipo_usuario || userData.type || 'luchador';
+      
+      // Normalizar nombres de roles por si vienen diferente
+      if (userRole === 'booker') userRole = 'booker';
+      else if (userRole === 'agrupacion' || userRole === 'agrupación') userRole = 'agrupacion';
+      else if (userRole === 'luchador') userRole = 'luchador';
+      else userRole = 'luchador'; // default
+
+      // Asegurar que userData tenga el role normalizado
+      userData.role = userRole;
+
+      console.log('✅ LOGIN PROCESSED - Role:', userRole);
 
       // Guardar en localStorage
       localStorage.setItem('authToken', authToken);
       localStorage.setItem('user', JSON.stringify(userData));
-      localStorage.setItem('userType', userData.role);
-      localStorage.setItem('userId', userData.id);
+      localStorage.setItem('userType', userRole);
+      localStorage.setItem('userId', userData.id || userData.user_id);
       localStorage.setItem('authenticated', 'true');
 
       // Actualizar estado
@@ -77,16 +90,29 @@ export const AuthProvider = ({ children }) => {
       const authToken = response.data.authToken || response.data.token;
       let userData = response.data.user || response.data;
 
-      // Asegurar que userData tenga el role
-      if (!userData.role) {
-        userData.role = role;
-      }
+      // Log para debuggear
+      console.log('📝 SIGNUP RESPONSE DATA:', JSON.stringify(response.data, null, 2));
+      console.log('👤 USER DATA:', JSON.stringify(userData, null, 2));
+
+      // Asegurar que userData tenga el role - probar múltiples campos posibles
+      let userRole = userData.role || userData.tipo_usuario || userData.type || role || 'luchador';
+      
+      // Normalizar nombres de roles
+      if (userRole === 'booker') userRole = 'booker';
+      else if (userRole === 'agrupacion' || userRole === 'agrupación') userRole = 'agrupacion';
+      else if (userRole === 'luchador') userRole = 'luchador';
+      else userRole = 'luchador'; // default
+
+      // Asegurar que userData tenga el role normalizado
+      userData.role = userRole;
+
+      console.log('✅ SIGNUP PROCESSED - Role:', userRole);
 
       // Guardar en localStorage
       localStorage.setItem('authToken', authToken);
       localStorage.setItem('user', JSON.stringify(userData));
-      localStorage.setItem('userType', role);
-      localStorage.setItem('userId', userData.id);
+      localStorage.setItem('userType', userRole);
+      localStorage.setItem('userId', userData.id || userData.user_id);
       localStorage.setItem('authenticated', 'true');
 
       // Actualizar estado

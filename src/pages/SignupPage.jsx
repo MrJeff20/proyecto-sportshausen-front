@@ -4,10 +4,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { useAuth } from '../context/AuthContext';
+import WelcomeModal from '../components/WelcomeModal';
 
 export const SignupPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -32,6 +34,7 @@ export const SignupPage = () => {
     e.preventDefault();
     setError('');
     setLoading(true);
+    setShowWelcomeModal(false);
 
     if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
       setError('Por favor completa todos los campos');
@@ -45,8 +48,8 @@ export const SignupPage = () => {
       return;
     }
 
-    if (formData.password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres');
+    if (formData.password.length < 8) {
+      setError('La contraseña debe tener al menos 8 caracteres');
       setLoading(false);
       return;
     }
@@ -58,17 +61,58 @@ export const SignupPage = () => {
     }
 
     try {
-      const result = await signup(formData.name, formData.email, formData.password, formData.role);
+      // Normalizar rol: agrupación -> agrupacion
+      let normalizedRole = formData.role ? formData.role.toLowerCase().trim() : 'luchador';
+      if (normalizedRole === 'agrupación') normalizedRole = 'agrupacion';
+      
+      console.log('📝 SIGNUP - Iniciando registro para rol:', normalizedRole, '(original:', formData.role + ')');
+      const result = await signup(formData.name, formData.email, formData.password, normalizedRole);
+      
+      console.log('📝 SIGNUP - Resultado:', result.success ? '✅ exitoso' : '❌ fallido');
       
       if (result.success) {
-        // Redirigir al dashboard
-        navigate(`/dashboard/${formData.role}`, { replace: true });
+        // Mostrar modal de bienvenida
+        setShowWelcomeModal(true);
+        
+        // Redirigir al dashboard después de que se cierre el modal
+        const redirectTimeout = setTimeout(() => {
+          // Verificar qué se guardó en localStorage
+          const savedUserType = localStorage.getItem('userType');
+          const savedUser = localStorage.getItem('user');
+          
+          console.log('📝 SIGNUP - Datos en localStorage:');
+          console.log('  userType:', savedUserType);
+          console.log('  formData.role:', formData.role);
+          console.log('  user:', savedUser ? JSON.parse(savedUser) : 'null');
+          
+          if (!savedUserType) {
+            console.error('❌ ERROR: userType no fue guardado en localStorage');
+            setError('Error al guardar la sesión. Por favor intenta de nuevo.');
+            setShowWelcomeModal(false);
+            setLoading(false);
+            return;
+          }
+          
+          // Usar lo que se guardó en localStorage, no formData.role
+          const dashboardRole = savedUserType;
+          const dashboardUrl = `/dashboard/${dashboardRole}`;
+          
+          console.log('🚀 SIGNUP REDIRECT - Target URL:', dashboardUrl);
+          navigate(dashboardUrl, { replace: true });
+        }, 2500);
+        
+        // Limpiar timeout si el componente se desmonta
+        return () => clearTimeout(redirectTimeout);
       } else {
-        setError(result.error || 'Error al crear la cuenta');
+        const errorMsg = result.error || 'Error al crear la cuenta';
+        console.error('❌ SIGNUP ERROR:', errorMsg);
+        setError(errorMsg);
+        setLoading(false);
       }
     } catch (err) {
-      setError(err.message || 'Error de conexión con el servidor');
-    } finally {
+      const errorMsg = err.message || 'Error de conexión con el servidor';
+      console.error('❌ SIGNUP EXCEPTION:', errorMsg);
+      setError(errorMsg);
       setLoading(false);
     }
   };
@@ -98,23 +142,6 @@ export const SignupPage = () => {
               <p className="text-gray-600">
                 Únete a SportsHausen hoy mismo
               </p>
-            </div>
-
-            {/* User Role Selection */}
-            <div className="mb-8">
-              <label className="block text-sm font-semibold text-sportshausen-dark mb-2">
-                ¿Cuál es tu rol?
-              </label>
-              <select
-                name="role"
-                value={formData.role}
-                onChange={handleInputChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 ring-sportshausen-red outline-none transition-all bg-white"
-              >
-                <option value="luchador">🥋 Luchador</option>
-                <option value="booker">📋 Booker</option>
-                <option value="agrupación">🏢 Agrupación</option>
-              </select>
             </div>
 
             {/* Form */}
@@ -188,6 +215,23 @@ export const SignupPage = () => {
                 />
               </div>
 
+              {/* User Role Selection */}
+              <div>
+                <label className="block text-sm font-semibold text-sportshausen-dark mb-2">
+                  ¿Cuál es tu rol?
+                </label>
+                <select
+                  name="role"
+                  value={formData.role}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 ring-sportshausen-red outline-none transition-all bg-white"
+                >
+                  <option value="luchador">🥋 Luchador</option>
+                  <option value="booker">📋 Booker</option>
+                  <option value="agrupacion">🏢 Agrupación</option>
+                </select>
+              </div>
+
               {/* Terms */}
               <label className="flex items-start gap-3 cursor-pointer">
                 <input
@@ -247,6 +291,14 @@ export const SignupPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Welcome Modal */}
+      {showWelcomeModal && (
+        <WelcomeModal 
+          userName={formData.name}
+          onClose={() => setShowWelcomeModal(false)}
+        />
+      )}
 
       <Footer />
     </div>

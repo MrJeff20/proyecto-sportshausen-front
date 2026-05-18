@@ -56,9 +56,9 @@ function App() {
           }
         />
         <Route
-          path="/dashboard/agrupación"
+          path="/dashboard/agrupacion"
           element={
-            <ProtectedRoute requiredRole="agrupación">
+            <ProtectedRoute requiredRole="agrupacion">
               <AgrupacionDashboard />
             </ProtectedRoute>
           }
