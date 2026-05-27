@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Search, LogOut, Heart, Star, MapPin } from 'lucide-react';
+import { Search, LogOut, Heart, Star, MapPin, Calendar } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import SideNav from '../components/SideNav';
 import Footer from '../components/Footer';
@@ -13,6 +14,7 @@ export const BookerDashboard = () => {
     weight: '',
   });
   const currentUser = { displayName: 'User Booker' };
+  const navigate = useNavigate();
 
   const luchadores = [
     { id: 1, nombre: 'Phoenix', ciudad: 'Santiago', exp: 8, rating: 4.8, img: '🔥' },
@@ -42,7 +44,14 @@ export const BookerDashboard = () => {
           {activeTab === 'home' && (
             <div>
               <h1 className="text-4xl font-bold text-sportshausen-dark mb-2">Descubre Nuevo Talento</h1>
-              <p className="text-gray-600 mb-8">Estos son los luchadores destacados esta semana</p>
+              <p className="text-gray-600 mb-4">Estos son los luchadores destacados esta semana</p>
+              
+              <div className="flex gap-4 mb-8">
+                <button onClick={() => navigate('/calendario-disponibilidad')} className="flex items-center gap-2 px-6 py-3 bg-sportshausen-red hover:bg-red-700 text-white font-semibold rounded-lg transition-colors">
+                  <Calendar size={20} />
+                  Calendario
+                </button>
+              </div>
 
               {/* Featured Grid */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

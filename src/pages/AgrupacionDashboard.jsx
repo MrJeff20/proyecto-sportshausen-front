@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar } from 'lucide-react';
+import { Calendar, Clock } from 'lucide-react';
 import Header from '../components/Header';
 import SideNav from '../components/SideNav';
 import Footer from '../components/Footer';
@@ -20,7 +20,14 @@ const AgrupacionDashboard = () => {
         <main className="main-content flex-1 p-8 transition-transform duration-300 ease-out">
           {activeTab === 'home' && (
             <div>
-              <h1 className="text-4xl font-bold text-sportshausen-dark mb-8">Bienvenido, {currentUser.displayName}!</h1>
+              <h1 className="text-4xl font-bold text-sportshausen-dark mb-4">Bienvenido, {currentUser.displayName}!</h1>
+              
+              <div className="flex gap-4 mb-8">
+                <button onClick={() => navigate('/calendario-disponibilidad')} className="flex items-center gap-2 px-6 py-3 bg-sportshausen-red hover:bg-red-700 text-white font-semibold rounded-lg transition-colors">
+                  <Calendar size={20} />
+                  Calendario
+                </button>
+              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                 {[

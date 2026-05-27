@@ -1,15 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Check, X } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import CalendlyEmbed from '../components/CalendlyEmbed';
 
 export const CalendarioDisponibilidad = () => {
   const [currentMonth, setCurrentMonth] = useState(4); // Mayo
   const [currentYear, setCurrentYear] = useState(2026);
-  const [selectedDates, setSelectedDates] = useState([5, 12, 15, 22, 29]);
+  const [selectedDates, setSelectedDates] = useState([
+    { date: 5, reason: '' },
+    { date: 12, reason: '' },
+    { date: 15, reason: '' },
+    { date: 22, reason: '' },
+    { date: 29, reason: '' }
+  ]);
   const [showModal, setShowModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const [modalReason, setModalReason] = useState('');
+  const [viewMode, setViewMode] = useState('calendly'); // 'calendly' o 'custom'
+  const [calendlyUrl, setCalendlyUrl] = useState('https://calendly.com/roberto-jara-de-la-barra'); // Cambiar por tu URL de Calendly
+
+  // Cargar fechas guardadas del localStorage
+  useEffect(() => {
+    const savedDates = localStorage.getItem('occupiedDates');
+    if (savedDates) {
+      setSelectedDates(JSON.parse(savedDates));
+    }
+  }, []);
+
+  // Guardar fechas en localStorage cuando cambien
+  const updateOccupiedDates = (newDates) => {
+    setSelectedDates(newDates);
+    localStorage.setItem('occupiedDates', JSON.stringify(newDates));
+  };
 
   const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
@@ -17,14 +40,23 @@ export const CalendarioDisponibilidad = () => {
 
   const handleDateClick = (date) => {
     setSelectedDate(date);
+    // Buscar si la fecha tiene un motivo guardado y cargarlo en el modal
+    const occupiedDate = selectedDates.find(d => d.date === date);
+    setModalReason(occupiedDate?.reason || '');
     setShowModal(true);
   };
 
+  const daysArray = Array.from({ length: firstDay }, (_, i) => null).concat(
+    Array.from({ length: daysInMonth }, (_, i) => i + 1)
+  );
+
   const toggleDate = (isOccupied) => {
     if (isOccupied) {
-      setSelectedDates(selectedDates.filter(d => d !== selectedDate));
+      // Si está ocupado, lo marcamos como disponible (lo removemos)
+      updateOccupiedDates(selectedDates.filter(d => d.date !== selectedDate));
     } else {
-      setSelectedDates([...selectedDates, selectedDate]);
+      // Si está disponible, lo marcamos como ocupado (lo añadimos)
+      updateOccupiedDates([...selectedDates, { date: selectedDate, reason: modalReason }]);
     }
     setModalReason('');
     setShowModal(false);
@@ -48,22 +80,57 @@ export const CalendarioDisponibilidad = () => {
     }
   };
 
-  const daysArray = Array.from({ length: firstDay }, (_, i) => null).concat(
-    Array.from({ length: daysInMonth }, (_, i) => i + 1)
-  );
-
   return (
     <div className="min-h-screen bg-sportshausen-light">
       <Header userType="luchador" />
 
-      <div className="max-w-4xl mx-auto px-4 py-12 pt-24">
+      <div className="max-w-6xl mx-auto px-4 py-12 pt-24">
         <div className="card-shadow bg-white rounded-2xl p-8">
-          <h1 className="text-3xl font-bold text-sportshausen-dark mb-2">Mi Calendario de Disponibilidad</h1>
-          <p className="text-gray-600 mb-8">Gestiona tus fechas de disponibilidad. Los días en rojo indican que estás ocupado.</p>
+          <div className="flex justify-between items-center mb-8">
+            <div>
+              <h1 className="text-3xl font-bold text-sportshausen-dark mb-2">Mi Calendario de Disponibilidad</h1>
+              <p className="text-gray-600">Gestiona tus fechas de disponibilidad y reservas</p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setViewMode('calendly')}
+                className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
+                  viewMode === 'calendly'
+                    ? 'bg-sportshausen-red text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                Calendly
+              </button>
+              <button
+                onClick={() => setViewMode('custom')}
+                className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
+                  viewMode === 'custom'
+                    ? 'bg-sportshausen-red text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                Personalizado
+              </button>
+            </div>
+          </div>
 
-          {/* Calendar */}
-          <div className="mb-8">
-            <div className="flex justify-between items-center mb-6">
+          {/* Vista de Calendly */}
+          {viewMode === 'calendly' && (
+            <div className="mb-8 w-full">
+              <div className="bg-white rounded-lg p-0 overflow-hidden">
+                <CalendlyEmbed calendlyUrl={calendlyUrl} />
+              </div>
+              <p className="text-sm text-gray-600 mt-4">
+                💡 Para configurar tu URL de Calendly, reemplaza la URL en el componente con tu enlace personal de Calendly.
+              </p>
+            </div>
+          )}
+
+          {/* Vista Personalizada */}
+          {viewMode === 'custom' && (
+            <div className="mb-8">
+              <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-sportshausen-dark">
                 {monthNames[currentMonth]} {currentYear}
               </h2>
@@ -95,7 +162,7 @@ export const CalendarioDisponibilidad = () => {
             {/* Days Grid */}
             <div className="grid grid-cols-7 gap-2">
               {daysArray.map((date, idx) => {
-                const isOccupied = date && selectedDates.includes(date);
+                const isOccupied = date && selectedDates.some(d => d.date === date);
                 const isPast = date && new Date(currentYear, currentMonth, date) < new Date();
 
                 return (
@@ -133,13 +200,37 @@ export const CalendarioDisponibilidad = () => {
                 <span className="text-sm text-gray-600"><strong>Gris:</strong> Pasado (no editable)</span>
               </div>
             </div>
-          </div>
 
-          {/* Action Buttons */}
-          <div className="flex gap-4 justify-center">
-            <button className="btn-secondary px-8 py-3">Descartar Cambios</button>
-            <button className="btn-primary px-8 py-3">Guardar Cambios</button>
-          </div>
+            {/* Action Buttons */}
+            <div className="flex gap-4 justify-center mt-8">
+              <button 
+                onClick={() => {
+                  // Recargar las fechas guardadas del localStorage
+                  const savedDates = localStorage.getItem('occupiedDates');
+                  if (savedDates) {
+                    setSelectedDates(JSON.parse(savedDates));
+                  } else {
+                    // Si no hay nada guardado, resetear a valores iniciales
+                    setSelectedDates([
+                      { date: 5, reason: '' },
+                      { date: 12, reason: '' },
+                      { date: 15, reason: '' },
+                      { date: 22, reason: '' },
+                      { date: 29, reason: '' }
+                    ]);
+                  }
+                }}
+                className="btn-secondary px-8 py-3">
+                Descartar Cambios
+              </button>
+              <button 
+                onClick={() => alert('✅ Cambios guardados exitosamente')}
+                className="btn-primary px-8 py-3">
+                Guardar Cambios
+              </button>
+            </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -178,14 +269,14 @@ export const CalendarioDisponibilidad = () => {
                 Cerrar
               </button>
               <button
-                onClick={() => toggleDate(!selectedDates.includes(selectedDate))}
+                onClick={() => toggleDate(selectedDates.some(d => d.date === selectedDate))}
                 className={`flex-1 px-4 py-2 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 ${
-                  selectedDates.includes(selectedDate)
+                  selectedDates.some(d => d.date === selectedDate)
                     ? 'btn-outline'
                     : 'btn-primary'
                 }`}
               >
-                {selectedDates.includes(selectedDate) ? (
+                {selectedDates.some(d => d.date === selectedDate) ? (
                   <>
                     <X size={18} />
                     Marcar Disponible

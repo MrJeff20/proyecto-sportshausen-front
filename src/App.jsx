@@ -8,6 +8,7 @@ import BookerDashboard from './pages/BookerDashboard';
 import AgrupacionDashboard from './pages/AgrupacionDashboard';
 import PanelDeLuchador from './pages/PanelDeLuchador';
 import PerfilLuchador from './pages/PerfilLuchador';
+import { CalendarioDisponibilidad } from './pages/CalendarioDisponibilidad';
 import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
@@ -80,6 +81,16 @@ function App() {
           element={
             <ProtectedRoute>
               <PerfilLuchador />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Ruta de Calendario - Protegida */}
+        <Route
+          path="/calendario-disponibilidad"
+          element={
+            <ProtectedRoute>
+              <CalendarioDisponibilidad />
             </ProtectedRoute>
           }
         />
