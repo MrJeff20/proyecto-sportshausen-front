@@ -1,10 +1,17 @@
-import React, { useState } from 'react';
-import { Star, MapPin, Mail, Share2, Phone, Calendar, MessageSquare } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Star, MapPin, Mail, Share2, Phone, Calendar, MessageSquare, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import SideNav from '../components/SideNav';
 import Footer from '../components/Footer';
+import { crearConversacion } from '../services/mensajeriaService';
 
 export const PerfilLuchador = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const myUserId = localStorage.getItem('userId');
+  const isOwnProfile = !id || String(id) === String(myUserId);
+
   const [showContactModal, setShowContactModal] = useState(false);
   const [connected, setConnected] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -12,6 +19,41 @@ export const PerfilLuchador = () => {
   const [previewModal, setPreviewModal] = useState(false);
   const [previewRole, setPreviewRole] = useState('talent');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [enviandoMensaje, setEnviandoMensaje] = useState(false);
+
+  // Calendar state — loads from localStorage (same key as CalendarioDisponibilidad)
+  const today = new Date();
+  const [calMonth, setCalMonth] = useState(today.getMonth());
+  const [calYear, setCalYear] = useState(today.getFullYear());
+  const [occupiedDates, setOccupiedDates] = useState([]);
+
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('occupiedDates') || '[]');
+      // Normalize: old format was {date} only, new format is {date, month, year}
+      setOccupiedDates(saved);
+    } catch { setOccupiedDates([]); }
+  }, []);
+
+  const monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  const firstDay = (new Date(calYear, calMonth, 1).getDay() + 6) % 7; // Mon=0
+  const calDays = Array.from({ length: firstDay }, () => null).concat(
+    Array.from({ length: daysInMonth }, (_, i) => i + 1)
+  );
+
+  const handleEnviarMensaje = async () => {
+    if (enviandoMensaje) return;
+    setEnviandoMensaje(true);
+    try {
+      const conv = await crearConversacion(parseInt(id));
+      navigate('/mensajeria', { state: { convId: conv?.id || conv?.conversacion_id } });
+    } catch {
+      navigate('/mensajeria');
+    } finally {
+      setEnviandoMensaje(false);
+    }
+  };
 
   React.useEffect(() => {
     try {
@@ -71,11 +113,11 @@ export const PerfilLuchador = () => {
       {/* Banner + Profile Header: only visible in preview mode */}
       {previewOpen && (
         <>
-          <div className={`h-48 md:h-64 ${luchador.banner} relative`}>
+          <div className={`h-48 md:h-64 md:ml-64 ${luchador.banner} relative`}>
             <div className="absolute inset-0 opacity-30 bg-black"></div>
           </div>
 
-          <div className="max-w-6xl mx-auto px-4 relative -mt-24 mb-8">
+          <div className="max-w-6xl mx-auto px-4 md:ml-64 relative -mt-24 mb-8">
             <div className="flex flex-col md:flex-row gap-6 items-start">
               {/* Avatar removed per request (no photos) */}
 
@@ -157,44 +199,69 @@ export const PerfilLuchador = () => {
       )}
 
       {/* Main content + Right profile panel grid */}
-      <div className="max-w-6xl mx-auto px-4 py-12 grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="max-w-6xl mx-auto px-4 py-12 md:ml-64 grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left: main profile content */}
         <div className="lg:col-span-2 space-y-6">
           {/* Reduced social elements: Redes Sociales section removed to make profile more tool-like */}
 
           {/* Calendario de Disponibilidad */}
           <section className="bg-white p-6 rounded-2xl">
-            <h2 className="text-2xl font-bold text-sportshausen-dark mb-6">Disponibilidad - Mayo 2026</h2>
-            <div className="grid grid-cols-7 gap-2 mb-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold text-sportshausen-dark">
+                Disponibilidad — {monthNames[calMonth]} {calYear}
+              </h2>
+              <div className="flex gap-1">
+                <button onClick={() => { if (calMonth === 0) { setCalMonth(11); setCalYear(y => y - 1); } else setCalMonth(m => m - 1); }} className="p-1.5 hover:bg-gray-100 rounded">
+                  <ChevronLeft size={18} className="text-sportshausen-red" />
+                </button>
+                <button onClick={() => { if (calMonth === 11) { setCalMonth(0); setCalYear(y => y + 1); } else setCalMonth(m => m + 1); }} className="p-1.5 hover:bg-gray-100 rounded">
+                  <ChevronRight size={18} className="text-sportshausen-red" />
+                </button>
+              </div>
+            </div>
+            <div className="grid grid-cols-7 gap-1 mb-2">
               {['L', 'M', 'X', 'J', 'V', 'S', 'D'].map((day) => (
-                <div key={day} className="text-center font-bold text-gray-600 text-sm py-2">{day}</div>
+                <div key={day} className="text-center font-bold text-gray-500 text-xs py-1">{day}</div>
               ))}
-              {[...Array(31)].map((_, i) => {
-                const date = i + 1;
-                const isOccupied = [5, 12, 15, 22, 29].includes(date);
+            </div>
+            <div className="grid grid-cols-7 gap-1">
+              {calDays.map((date, idx) => {
+                if (!date) return <div key={idx} />;
+                const isOccupied = occupiedDates.some(d => {
+                  const dayMatch = (d.date ?? d) === date;
+                  // New format includes month+year; old format was day-only
+                  if (d.month !== undefined) return dayMatch && d.month === calMonth && d.year === calYear;
+                  return dayMatch;
+                });
+                const isPast = new Date(calYear, calMonth, date) < new Date(today.getFullYear(), today.getMonth(), today.getDate());
                 return (
                   <div
-                    key={i}
-                    className={`p-4 rounded-lg text-center font-semibold cursor-pointer transition-all ${
-                      isOccupied
-                        ? 'bg-sportshausen-red text-white'
-                        : 'bg-white text-sportshausen-dark border-2 border-green-500'
-                    }`}
+                    key={idx}
+                    onClick={() => isOwnProfile && !isPast && navigate('/calendario-disponibilidad')}
+                    className={`p-2 rounded-lg text-center font-semibold text-sm h-10 flex items-center justify-center transition-all ${
+                      isPast ? 'bg-gray-100 text-gray-400' :
+                      isOccupied ? 'bg-sportshausen-red text-white' : 'cal-disponible'
+                    } ${isOwnProfile && !isPast ? 'cursor-pointer hover:shadow-md' : 'cursor-default'}`}
                   >
                     {date}
                   </div>
                 );
               })}
             </div>
-            <div className="flex gap-6 mt-6">
+            <div className="flex gap-6 mt-4">
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 bg-green-500 rounded"></div>
-                <span className="text-sm text-gray-600">Disponible</span>
+                <div className="w-4 h-4 rounded" style={{background:'#FFF3C0',border:'1.5px solid #FFD100'}}></div>
+                <span className="text-xs text-gray-600">Disponible</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 bg-sportshausen-red rounded"></div>
-                <span className="text-sm text-gray-600">Ocupado</span>
+                <div className="w-4 h-4 bg-sportshausen-red rounded"></div>
+                <span className="text-xs text-gray-600">Ocupado</span>
               </div>
+              {isOwnProfile && (
+                <button onClick={() => navigate('/calendario-disponibilidad')} className="ml-auto text-xs text-sportshausen-red underline">
+                  Gestionar disponibilidad →
+                </button>
+              )}
             </div>
           </section>
 
@@ -257,22 +324,36 @@ export const PerfilLuchador = () => {
               </div>
             )}
 
-              <div className="flex gap-3">
-                {!previewOpen && (
-                  !editMode ? (
-                    <button onClick={()=>setEditMode(true)} className="flex-1 px-4 py-2 border rounded font-semibold">Editar</button>
-                  ) : (
-                    <>
-                      <button onClick={()=>setEditMode(false)} className="flex-1 px-4 py-2 bg-green-600 text-white rounded font-semibold">Guardar</button>
-                      <button onClick={()=>setEditMode(false)} className="flex-1 px-4 py-2 border rounded font-semibold">Cancelar</button>
-                    </>
-                  )
-                )}
-
-                {!previewOpen ? (
-                  <button onClick={()=>setPreviewModal(true)} className="flex-1 btn-primary">Vista previa</button>
+              <div className="flex flex-col gap-2">
+                {isOwnProfile ? (
+                  <>
+                    <div className="flex gap-2">
+                      {!previewOpen && (
+                        !editMode ? (
+                          <button onClick={()=>setEditMode(true)} className="flex-1 px-4 py-2 border rounded font-semibold text-sm">Editar</button>
+                        ) : (
+                          <>
+                            <button onClick={()=>setEditMode(false)} className="flex-1 btn-primary text-sm">Guardar</button>
+                            <button onClick={()=>setEditMode(false)} className="flex-1 px-4 py-2 border rounded font-semibold text-sm">Cancelar</button>
+                          </>
+                        )
+                      )}
+                      {!previewOpen ? (
+                        <button onClick={()=>setPreviewModal(true)} className="flex-1 btn-primary text-sm">Vista previa</button>
+                      ) : (
+                        <button onClick={()=>setPreviewOpen(false)} className="flex-1 border rounded text-sm">Cerrar vista</button>
+                      )}
+                    </div>
+                  </>
                 ) : (
-                  <button onClick={()=>setPreviewOpen(false)} className="flex-1 border rounded">Cerrar vista</button>
+                  <button
+                    onClick={handleEnviarMensaje}
+                    disabled={enviandoMensaje}
+                    className="w-full btn-primary flex items-center justify-center gap-2 disabled:opacity-60"
+                  >
+                    <MessageSquare size={16} />
+                    {enviandoMensaje ? 'Abriendo chat...' : 'Enviar Mensaje'}
+                  </button>
                 )}
               </div>
           </div>

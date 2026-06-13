@@ -1,82 +1,85 @@
 @import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
 
+/* ===========================
+   TAILWIND v4: TOKENS DE COLOR
+   (reemplaza tailwind.config.js — v4 solo lee @theme)
+   =========================== */
+@theme {
+  --color-sportshausen-red:    #CC1B33;
+  --color-sportshausen-dark:   #111111;
+  --color-sportshausen-gold:   #FFD100;
+  --color-sportshausen-yellow: #FFD100;
+  --color-sportshausen-text:   #1A1A1A;
+  --color-sportshausen-light:  #FFF9F2;
+
+  --font-display: 'Bebas Neue', 'Montserrat', sans-serif;
+  --font-body:    'Inter', 'Poppins', sans-serif;
+}
+
+/* ===========================
+   PALETA: ROJO / AMARILLO / NEGRO
+   =========================== */
 :root {
-  --primary: #E63946;
-  --secondary: #1D1D2B;
-  --gold: #F4A261;
-  --yellow: #FFD166;
-  --text: #2C3E50;
-  --light-bg: #F8F9FA;
+  --red:        #CC1B33;
+  --red-dark:   #A01527;
+  --yellow:     #FFD100;
+  --yellow-dark:#E6BC00;
+  --black:      #111111;
+  --dark:       #1A1A1A;
+  --warm-bg:    #FFF9F2;
+  --text:       #1A1A1A;
+
+  /* aliases para compatibilidad */
+  --primary:    var(--red);
+  --secondary:  var(--black);
+  --gold:       var(--yellow);
+  --light-bg:   var(--warm-bg);
 }
 
-/* Custom Animations */
+/* ===========================
+   ANIMACIONES
+   =========================== */
 @keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(20px);
-  }
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(20px); }
 }
-
 @keyframes glow {
-  0%, 100% {
-    box-shadow: 0 0 20px rgba(230, 57, 70, 0.5);
-  }
-  50% {
-    box-shadow: 0 0 40px rgba(230, 57, 70, 0.8);
-  }
+  0%, 100% { box-shadow: 0 0 20px rgba(204, 27, 51, 0.5); }
+  50%       { box-shadow: 0 0 40px rgba(204, 27, 51, 0.8); }
 }
+.animate-float { animation: float 6s ease-in-out infinite; }
+.animate-glow  { animation: glow 2s ease-in-out infinite; }
 
-.animate-float {
-  animation: float 6s ease-in-out infinite;
-}
-
-.animate-glow {
-  animation: glow 2s ease-in-out infinite;
-}
-
-/* Custom Utility Classes */
+/* ===========================
+   BOTONES
+   =========================== */
 .btn-primary {
   padding: 0.75rem 1.5rem;
-  background-color: var(--primary);
+  background-color: var(--red);
   color: white;
   border-radius: 0.5rem;
-  font-weight: 600;
-  transition: all 0.3s ease;
+  font-weight: 700;
+  transition: all 0.2s ease;
   cursor: pointer;
   border: none;
 }
-
 .btn-primary:hover {
-  background-color: #c91c34;
+  background-color: var(--red-dark);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(230, 57, 70, 0.3);
-}
-
-.bg-sportshausen-red {
-  background-color: #c91c34 !important;
-}
-.bg-sportshausen-red:hover {
-  background-color: white !important;
-}
-
-.text-dark {
-  color: #49494b !important;
+  box-shadow: 0 4px 12px rgba(204, 27, 51, 0.35);
 }
 
 .btn-secondary {
   padding: 0.75rem 1.5rem;
-  background-color: var(--secondary);
+  background-color: var(--black);
   color: white;
   border-radius: 0.5rem;
-  font-weight: 600;
-  transition: all 0.3s ease;
+  font-weight: 700;
+  transition: all 0.2s ease;
   cursor: pointer;
   border: none;
 }
-
 .btn-secondary:hover {
   background-color: #000;
   transform: translateY(-2px);
@@ -84,41 +87,23 @@
 
 .btn-outline {
   padding: 0.75rem 1.5rem;
-  border: 2px solid var(--primary);
-  color: var(--primary);
+  border: 2px solid var(--red);
+  color: var(--red);
   border-radius: 0.5rem;
-  font-weight: 600;
-  transition: all 0.3s ease;
+  font-weight: 700;
+  transition: all 0.2s ease;
   cursor: pointer;
   background: white;
 }
-
 .btn-outline:hover {
-  background-color: rgba(230, 57, 70, 0.1);
+  background-color: rgba(204, 27, 51, 0.08);
 }
 
-/* High contrast button for better visibility */
-.btn-contrast {
-  padding: 0.75rem 1.25rem;
-  background-color: var(--secondary);
-  color: white;
-  border-radius: 0.5rem;
-  font-weight: 700;
-  border: 2px solid rgba(0,0,0,0.08);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
-  cursor: pointer;
-}
-.btn-contrast:hover {
-  transform: translateY(-2px);
-  background-color: #111118;
-}
-
-/* Subtle button: animation like register but lower contrast to fit the page */
 .btn-subtle {
   padding: 0.6rem 1.25rem;
   background: white;
-  color: var(--primary);
-  border: 2px solid rgba(230, 57, 70, 0.15);
+  color: var(--red);
+  border: 2px solid rgba(204, 27, 51, 0.2);
   border-radius: 9999px;
   font-weight: 600;
   transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.15s ease;
@@ -126,31 +111,83 @@
 }
 .btn-subtle:hover {
   transform: translateY(-2px);
-  background-color: rgba(230,57,70,0.06);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+  background-color: rgba(204, 27, 51, 0.06);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
 }
-.btn-subtle:active {
-  transform: translateY(0);
+.btn-subtle:active { transform: translateY(0); }
+
+.btn-yellow {
+  padding: 0.75rem 1.5rem;
+  background-color: var(--yellow);
+  color: var(--black);
+  border-radius: 0.5rem;
+  font-weight: 700;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: none;
+}
+.btn-yellow:hover {
+  background-color: var(--yellow-dark);
+  transform: translateY(-2px);
 }
 
+/* ===========================
+   OVERRIDES TAILWIND
+   (tailwind genera las clases sportshausen-* desde config,
+    pero necesitamos asegurar hover correcto aquí)
+   =========================== */
+.bg-sportshausen-red         { background-color: #CC1B33 !important; }
+.bg-sportshausen-red:hover   { background-color: #A01527 !important; }
+.bg-sportshausen-gold        { background-color: #FFD100 !important; }
+.bg-sportshausen-gold:hover  { background-color: #E6BC00 !important; }
+
+/* ===========================
+   BADGES / STATUS (paleta estricta)
+   =========================== */
+.badge-yellow  { background: #FFD100; color: #111111; padding: 0.2rem 0.7rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; }
+.badge-red     { background: #CC1B33; color: white;   padding: 0.2rem 0.7rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; }
+.badge-dark    { background: #1A1A1A; color: white;   padding: 0.2rem 0.7rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; }
+.badge-outline { background: white;   color: #111111; padding: 0.2rem 0.7rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; border: 1.5px solid #ddd; }
+
+/* ===========================
+   DISPONIBILIDAD CALENDARIO
+   (amarillo = disponible, rojo = ocupado, gris = pasado)
+   =========================== */
+.cal-disponible {
+  background: #FFF3C0;
+  color: #7A5C00;
+  border: 1.5px solid #FFD100;
+}
+.cal-disponible:hover { background: #FFD100; color: #111; }
+.cal-ocupado    { background: #CC1B33; color: white; }
+.cal-pasado     { background: #e5e5e5; color: #999; cursor: not-allowed; }
+
+/* ===========================
+   CARDS & SOMBRAS
+   =========================== */
 .card-shadow {
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   border-radius: 1rem;
 }
 
-.transition-smooth {
-  transition: all 0.3s ease-in-out;
-}
+/* ===========================
+   TEXTOS
+   =========================== */
+.text-dark { color: #111111 !important; }
 
-/* Dark Mode Optimization */
+/* ===========================
+   TRANSICIONES
+   =========================== */
+.transition-smooth { transition: all 0.3s ease-in-out; }
+
+/* ===========================
+   BASE
+   =========================== */
 html {
   scroll-behavior: smooth;
-  color-scheme: light dark;
+  color-scheme: light;
 }
-
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
@@ -164,12 +201,8 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: bold;
 }
 
-/* Left drawer open: shift main content to the right to mimic YouTube */
-.left-drawer-open .main-content {
-  transform: translateX(16rem);
-}
-
-/* Ensure drawer has smooth transform performance */
-.main-content {
-  will-change: transform;
-}
+/* ===========================
+   LAYOUT DASHBOARD
+   =========================== */
+.left-drawer-open .main-content { transform: translateX(16rem); }
+.main-content { will-change: transform; }

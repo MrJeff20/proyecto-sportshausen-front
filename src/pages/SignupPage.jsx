@@ -95,7 +95,7 @@ export const SignupPage = () => {
           
           // Usar lo que se guardó en localStorage, no formData.role
           const dashboardRole = savedUserType;
-          const dashboardUrl = `/dashboard/${dashboardRole}`;
+          const dashboardUrl = dashboardRole === 'luchador' ? '/panel/luchador' : `/dashboard/${dashboardRole}`;
           
           console.log('🚀 SIGNUP REDIRECT - Target URL:', dashboardUrl);
           navigate(dashboardUrl, { replace: true });
@@ -277,15 +277,15 @@ export const SignupPage = () => {
           {/* Benefits */}
           <div className="mt-12 space-y-3">
             <div className="flex items-center gap-3">
-              <Check size={20} className="text-green-500 flex-shrink-0" />
+              <Check size={20} className="text-sportshausen-red flex-shrink-0" />
               <span className="text-sm text-gray-600">Acceso inmediato a la plataforma</span>
             </div>
             <div className="flex items-center gap-3">
-              <Check size={20} className="text-green-500 flex-shrink-0" />
+              <Check size={20} className="text-sportshausen-red flex-shrink-0" />
               <span className="text-sm text-gray-600">Perfil verificado y profesional</span>
             </div>
             <div className="flex items-center gap-3">
-              <Check size={20} className="text-green-500 flex-shrink-0" />
+              <Check size={20} className="text-sportshausen-red flex-shrink-0" />
               <span className="text-sm text-gray-600">Conecta con tu comunidad deportiva</span>
             </div>
           </div>

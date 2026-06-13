@@ -7,16 +7,16 @@ export default {
   theme: {
     extend: {
       colors: {
-        'sportshausen-red': '#E63946',
-        'sportshausen-dark': '#1D1D2B',
-        'sportshausen-gold': '#F4A261',
-        'sportshausen-yellow': '#FFD166',
-        'sportshausen-text': '#2C3E50',
-        'sportshausen-light': '#F8F9FA',
+        'sportshausen-red':    '#CC1B33',
+        'sportshausen-dark':   '#111111',
+        'sportshausen-gold':   '#FFD100',
+        'sportshausen-yellow': '#FFD100',
+        'sportshausen-text':   '#1A1A1A',
+        'sportshausen-light':  '#FFF9F2',
       },
       fontFamily: {
         'display': ['Bebas Neue', 'Montserrat', 'sans-serif'],
-        'body': ['Inter', 'Poppins', 'sans-serif'],
+        'body':    ['Inter', 'Poppins', 'sans-serif'],
       },
     },
   },

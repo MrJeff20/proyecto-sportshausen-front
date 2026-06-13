@@ -15,8 +15,8 @@ export const WelcomeModal = ({ userName, onClose, duration = 2500 }) => {
       <div className="bg-white rounded-2xl p-8 md:p-12 max-w-md w-full text-center animate-fadeIn">
         {/* Icon */}
         <div className="flex justify-center mb-6">
-          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
-            <CheckCircle size={48} className="text-green-600" />
+          <div className="w-20 h-20 bg-sportshausen-gold rounded-full flex items-center justify-center">
+            <CheckCircle size={48} className="text-sportshausen-dark" />
           </div>
         </div>
 

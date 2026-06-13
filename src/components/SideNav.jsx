@@ -1,33 +1,61 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const SideNav = ({ active, onSelect, isOpen = false, setIsOpen }) => {
-  // Temporary global hide flag: set to true to completely hide the navbar and its contents.
-  const HIDE_NAVBAR = true;
-  if (HIDE_NAVBAR) return null;
+  const authed = typeof window !== 'undefined' && localStorage.getItem('authenticated') === 'true';
+  if (!authed) return null;
+  const navigate = useNavigate();
+  const userType = typeof window !== 'undefined' ? localStorage.getItem('userType') : null;
   const items = [
-    { id: 'profile', label: 'Mi perfil', icon: '👤', to: '/perfil/1' },
-    { id: 'calendar', label: 'Calendario', icon: '📅', to: '/calendario' },
-    { id: 'events', label: 'Eventos', icon: '📌', to: '/events' },
-    { id: 'offers', label: 'Ofertas', icon: '💼', to: '/offers' },
-    { id: 'notifications', label: 'Notificaciones', icon: '🔔', to: '/notifications' },
+    { id: 'home', label: 'Inicio', icon: '🏠' },
+    { id: 'profile', label: 'Mi perfil', icon: '👤' },
+    { id: 'calendar', label: 'Calendario', icon: '📅' },
+    { id: 'events', label: 'Eventos', icon: '📌' },
+    { id: 'offers', label: 'Ofertas', icon: '💼' },
+    { id: 'messages', label: 'Mensajes', icon: '💬' },
+    { id: 'notifications', label: 'Notificaciones', icon: '🔔' },
   ];
+
+  const handleClick = (id) => {
+    const routes = {
+      home:          userType === 'luchador' ? '/panel/luchador'
+                   : userType === 'booker'   ? '/dashboard/booker'
+                   : '/dashboard/agrupacion',
+      profile:       `/perfil/${localStorage.getItem('userId') || '1'}`,
+      calendar:      '/calendario-disponibilidad',
+      events:        '/mis-eventos',
+      offers:        '/ofertas',
+      messages:      '/mensajeria',
+      notifications: '/notificaciones',
+    };
+    if (routes[id]) {
+      navigate(routes[id]);
+    } else if (onSelect) {
+      onSelect(id);
+    }
+  };
+
+  const NavItem = ({ item, onClick }) => (
+    <button
+      onClick={() => onClick(item.id)}
+      className={`w-full text-left px-4 py-3 rounded-lg font-semibold transition-colors ${
+        active === item.id
+          ? 'bg-sportshausen-red text-white'
+          : 'text-gray-700 hover:bg-gray-50'
+      }`}
+    >
+      <span className="mr-2">{item.icon}</span>
+      {item.label}
+    </button>
+  );
 
   return (
     <>
-      {/* Desktop / large screens */}
-      <nav className="fixed left-0 top-16 bottom-0 w-64 bg-white border-r border-gray-200 p-6 hidden md:block z-40">
-        <div className="space-y-3">
+      {/* Desktop sidebar */}
+      <nav className="fixed left-0 top-16 bottom-0 w-64 bg-white border-r border-gray-200 p-4 hidden md:block z-40 overflow-y-auto">
+        <div className="space-y-1">
           {items.map(item => (
-            <Link
-              key={item.id}
-              to={item.to}
-              onClick={() => onSelect && onSelect(item.id)}
-              className={`block px-4 py-3 rounded-lg font-semibold ${active === item.id ? 'bg-sportshausen-red text-white' : 'text-gray-700 hover:bg-gray-50'}`}
-            >
-              <span className="mr-2">{item.icon}</span>
-              {item.label}
-            </Link>
+            <NavItem key={item.id} item={item} onClick={handleClick} />
           ))}
         </div>
       </nav>
@@ -35,19 +63,28 @@ const SideNav = ({ active, onSelect, isOpen = false, setIsOpen }) => {
       {/* Mobile drawer */}
       {isOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
-          <div className="absolute inset-0 bg-black opacity-30" onClick={() => setIsOpen && setIsOpen(false)} />
-          <div className="absolute left-0 top-0 bottom-0 w-64 bg-white p-6 shadow-lg overflow-auto">
-            <div className="space-y-3">
+          <div
+            className="absolute inset-0 bg-black opacity-40"
+            onClick={() => setIsOpen && setIsOpen(false)}
+          />
+          <div className="absolute left-0 top-0 bottom-0 w-64 bg-white p-4 shadow-xl overflow-y-auto">
+            <div className="pt-4 space-y-1">
               {items.map(item => (
-                <Link
+                <button
                   key={item.id}
-                  to={item.to}
-                  onClick={() => { onSelect && onSelect(item.id); setIsOpen && setIsOpen(false); }}
-                  className={`block px-4 py-3 rounded-lg font-semibold ${active === item.id ? 'bg-sportshausen-red text-white' : 'text-gray-700 hover:bg-gray-50'}`}
+                  onClick={() => {
+                    handleClick(item.id);
+                    setIsOpen && setIsOpen(false);
+                  }}
+                  className={`w-full text-left px-4 py-3 rounded-lg font-semibold transition-colors ${
+                    active === item.id
+                      ? 'bg-sportshausen-red text-white'
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}
                 >
                   <span className="mr-2">{item.icon}</span>
                   {item.label}
-                </Link>
+                </button>
               ))}
             </div>
           </div>

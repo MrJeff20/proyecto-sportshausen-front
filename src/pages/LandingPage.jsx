@@ -99,8 +99,8 @@ export const LandingPage = () => {
                           <div
                             key={i}
                             className={`w-6 h-6 rounded text-xs flex items-center justify-center font-bold ${
-                              i % 3 === 0 
-                                ? 'bg-green-100 text-green-700' 
+                              i % 3 === 0
+                                ? 'cal-disponible'
                                 : 'bg-red-100 text-red-700'
                             }`}
                           >
@@ -213,6 +213,88 @@ export const LandingPage = () => {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Ofertas Destacadas de la Semana */}
+      <section className="py-24 px-4 bg-white">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-50 border border-sportshausen-red/30 rounded-full mb-4">
+              <span className="text-sm font-semibold text-sportshausen-red">🔥 Actualizado esta semana</span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-display font-bold text-sportshausen-dark mb-4">
+              Ofertas Destacadas
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Las mejores oportunidades de esta semana para luchadores profesionales
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              {
+                org: 'FNL',
+                titulo: 'Luchador Estelar',
+                desc: 'Evento principal en Santiago. Se busca talento técnico con 3+ años de experiencia.',
+                fecha: '20 Jun 2026',
+                tarifa: '$200.000 CLP',
+                lugar: 'Santiago',
+                tag: 'Destacado',
+              },
+              {
+                org: 'WKC',
+                titulo: 'Combate de Campeonato',
+                desc: 'Disputa del cinturón regional. Experiencia en combates de título requerida.',
+                fecha: '5 Jul 2026',
+                tarifa: '$350.000 CLP',
+                lugar: 'Valparaíso',
+                tag: 'Urgente',
+              },
+              {
+                org: '5 Luchas Clandestino',
+                titulo: 'Lucha de Apertura',
+                desc: 'Show familiar. Buen ambiente y público. Perfecto para luchadores emergentes.',
+                fecha: '12 Jul 2026',
+                tarifa: '$80.000 CLP',
+                lugar: 'Concepción',
+                tag: 'Nuevo',
+              },
+            ].map((oferta, i) => (
+              <div key={i} className="border border-gray-200 rounded-2xl p-6 hover:shadow-lg hover:border-sportshausen-red/40 transition-all bg-white group">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-sportshausen-red to-red-700 rounded-xl flex items-center justify-center text-white font-black text-lg">
+                    {oferta.org[0]}
+                  </div>
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                    oferta.tag === 'Urgente' ? 'badge-red' :
+                    oferta.tag === 'Destacado' ? 'badge-yellow' :
+                    'badge-dark'
+                  }`}>{oferta.tag}</span>
+                </div>
+                <p className="text-xs font-semibold text-sportshausen-red mb-1">{oferta.org}</p>
+                <h3 className="text-xl font-bold text-sportshausen-dark mb-2">{oferta.titulo}</h3>
+                <p className="text-gray-600 text-sm mb-4 leading-relaxed">{oferta.desc}</p>
+                <div className="flex justify-between items-center text-sm text-gray-500 mb-4">
+                  <span>📍 {oferta.lugar}</span>
+                  <span>📅 {oferta.fecha}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <p className="font-bold text-sportshausen-red text-lg">{oferta.tarifa}</p>
+                  <Link to="/signup" className="px-4 py-2 bg-sportshausen-red text-white rounded-lg text-sm font-semibold hover:bg-red-700 transition-colors">
+                    Postular
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-center mt-10">
+            <Link to="/signup" className="inline-flex items-center gap-2 px-8 py-4 border-2 border-sportshausen-red text-sportshausen-red font-bold rounded-lg hover:bg-red-50 transition-all">
+              Ver Todas las Ofertas
+              <Trophy size={18} />
+            </Link>
           </div>
         </div>
       </section>

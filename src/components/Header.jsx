@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext';
 export const Header = ({ userType = 'guest', isOpen: propIsOpen, setIsOpen: propSetIsOpen, onLogout = () => {} }) => {
   const navigate = useNavigate();
   const { logout } = useAuth();
-  
+
   const handleLogout = async () => {
     try {
       await logout();
@@ -15,12 +15,13 @@ export const Header = ({ userType = 'guest', isOpen: propIsOpen, setIsOpen: prop
       console.error('Error en logout:', e);
     }
     try { if (typeof onLogout === 'function') onLogout(); } catch (e) {}
-    // Usar window.location.href para forzar navegación a la página principal
     window.location.href = '/';
   };
   const [internalOpen, setInternalOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [leftMenuOpen, setLeftMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const location = useLocation();
   const authed = typeof window !== 'undefined' && localStorage.getItem('authenticated') === 'true';
   // Show left drawer for authenticated users on app pages, but hide on landing and login
@@ -61,29 +62,6 @@ export const Header = ({ userType = 'guest', isOpen: propIsOpen, setIsOpen: prop
         <div className="flex justify-between items-center h-16">
           {/* Menu button moved before logo to match requested order */}
           <div className="flex items-center gap-3">
-            {showLeftDrawer && (
-              <div className="relative">
-                <button onClick={() => setLeftMenuOpen(!leftMenuOpen)} className="hidden md:flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-100 transition-colors">
-                  <Menu size={16} />
-                </button>
-                <div className={`hidden md:block fixed top-16 left-0 h-[calc(100vh-4rem)] bg-white rounded-r-md shadow-lg border border-gray-100 w-64 z-40 transform transition-transform duration-300 ease-out ${leftMenuOpen ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0 pointer-events-none'}`}>
-                  <div className="p-4">
-                    {menuItems.map((item) => (
-                      <button
-                        key={item.label}
-                        onClick={() => {
-                          setLeftMenuOpen(false);
-                          navigate(item.to ? item.to : '/not-found');
-                        }}
-                        className="w-full text-left px-4 py-3 hover:bg-gray-50 rounded"
-                      >
-                        {item.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
             <button onClick={() => setIsOpen(!isOpen)} className="p-2 rounded-lg hover:bg-gray-100 transition-colors md:hidden">
               {isOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
@@ -91,7 +69,7 @@ export const Header = ({ userType = 'guest', isOpen: propIsOpen, setIsOpen: prop
               try {
                 const authed = localStorage.getItem('authenticated') === 'true';
                 if (authed) {
-                  if (userTypeStored === 'luchador') navigate('/dashboard/luchador');
+                  if (userTypeStored === 'luchador') navigate('/panel/luchador');
                   else if (userTypeStored === 'agrupacion') navigate('/dashboard/agrupacion');
                   else navigate('/dashboard');
                 } else {
@@ -152,9 +130,36 @@ export const Header = ({ userType = 'guest', isOpen: propIsOpen, setIsOpen: prop
 
             {userType !== 'guest' && (
               <>
-                <button className="hidden md:flex items-center gap-2 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
-                  <Search size={18} />
-                </button>
+                <div className="hidden md:flex items-center relative">
+                  {searchOpen ? (
+                    <div className="flex items-center gap-2 bg-gray-100 rounded-full px-3 py-1.5">
+                      <Search size={16} className="text-gray-400" />
+                      <input
+                        autoFocus
+                        type="text"
+                        value={searchQuery}
+                        onChange={e => setSearchQuery(e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter' && searchQuery.trim()) {
+                            navigate(`/dashboard/booker`);
+                            setSearchOpen(false);
+                            setSearchQuery('');
+                          }
+                          if (e.key === 'Escape') { setSearchOpen(false); setSearchQuery(''); }
+                        }}
+                        placeholder="Buscar luchadores..."
+                        className="bg-transparent outline-none text-sm w-48 text-gray-700"
+                      />
+                      <button onClick={() => { setSearchOpen(false); setSearchQuery(''); }} className="text-gray-400 hover:text-gray-600">
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ) : (
+                    <button onClick={() => setSearchOpen(true)} className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
+                      <Search size={18} />
+                    </button>
+                  )}
+                </div>
                 <button className="hidden md:flex items-center gap-2 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors relative">
                   <Bell size={18} />
                   <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>

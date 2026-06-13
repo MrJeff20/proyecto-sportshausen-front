@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Trophy, Calendar, MapPin, Users, Star, ArrowRight, Briefcase, Award } from 'lucide-react';
 import Header from '../components/Header';
+import SideNav from '../components/SideNav';
 import Footer from '../components/Footer';
 
 const ofertasCampeonatos = [
@@ -107,13 +108,24 @@ const bookersRecomendados = [
 
 const PanelDeLuchador = () => {
   const navigate = useNavigate();
-  const currentUser = { displayName: 'Blake Parker' };
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Nombre desde localStorage según el tipo de cuenta
+  let displayName = 'Luchador';
+  try {
+    const raw = localStorage.getItem('user');
+    if (raw) {
+      const u = JSON.parse(raw);
+      displayName = u.nombre_artistico || u.name || u.email || displayName;
+    }
+  } catch (_) {}
 
   return (
     <div className="min-h-screen bg-sportshausen-light">
-      <Header userType="luchador" />
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
+      <Header userType="luchador" isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+      <div className="flex pt-16 min-h-screen">
+        <SideNav active={null} onSelect={() => {}} isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+        <main className="flex-1 md:ml-64 px-4 sm:px-6 lg:px-8 py-10 space-y-12 overflow-y-auto">
         {/* Bienvenida */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
           <div>
@@ -121,7 +133,7 @@ const PanelDeLuchador = () => {
               Panel del Luchador
             </h1>
             <p className="text-lg text-gray-600 mt-2">
-              Hola, <span className="font-semibold text-sportshausen-red">{currentUser.displayName}</span>. Aquí están las oportunidades más recientes para ti.
+              Hola, <span className="font-semibold text-sportshausen-red">{displayName}</span>. Aquí están las oportunidades más recientes para ti.
             </p>
           </div>
           <Link
@@ -317,7 +329,8 @@ const PanelDeLuchador = () => {
             ))}
           </div>
         </section>
-      </main>
+        </main>
+      </div>
 
       <Footer />
     </div>

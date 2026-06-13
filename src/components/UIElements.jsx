@@ -3,17 +3,17 @@ import { AlertCircle, CheckCircle, Info, X } from 'lucide-react';
 
 export const Toast = ({ type = 'success', message, onClose }) => {
   const bgColors = {
-    success: 'bg-green-100 border-green-400',
+    success: 'bg-yellow-50 border-sportshausen-yellow',
     error: 'bg-red-100 border-red-400',
     warning: 'bg-yellow-100 border-yellow-400',
-    info: 'bg-blue-100 border-blue-400',
+    info: 'bg-gray-100 border-gray-400',
   };
 
   const textColors = {
-    success: 'text-green-800',
+    success: 'text-sportshausen-dark',
     error: 'text-red-800',
     warning: 'text-yellow-800',
-    info: 'text-blue-800',
+    info: 'text-gray-800',
   };
 
   const icons = {

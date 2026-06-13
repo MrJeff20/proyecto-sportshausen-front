@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, Clock } from 'lucide-react';
+import { Calendar, Clock, Link as LinkIcon } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import Header from '../components/Header';
 import SideNav from '../components/SideNav';
 import Footer from '../components/Footer';
+import { CalendarioDisponibilidad } from './CalendarioDisponibilidad';
 
 const LuchadorDashboard = () => {
   const [activeTab, setActiveTab] = useState('home');
@@ -17,7 +19,7 @@ const LuchadorDashboard = () => {
       <div className="flex min-h-screen pt-16">
         <SideNav active={activeTab} onSelect={(id) => setActiveTab(id)} isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
 
-        <main className="main-content flex-1 p-8 transition-transform duration-300 ease-out">
+        <main className="main-content flex-1 p-4 md:p-8 md:ml-64 transition-transform duration-300 ease-out overflow-y-auto">
           {activeTab === 'home' && (
             <div>
               <h1 className="text-4xl font-bold text-sportshausen-dark mb-4">¡Bienvenido, {currentUser.displayName}!</h1>
@@ -112,29 +114,88 @@ const LuchadorDashboard = () => {
 
           {activeTab === 'calendar' && (
             <div>
-              <h1 className="text-3xl font-bold text-sportshausen-dark mb-4">Calendario</h1>
-              <div className="card-shadow bg-white p-6 rounded-lg">Calendario y disponibilidad</div>
+              <CalendarioDisponibilidad embedded />
             </div>
           )}
 
           {activeTab === 'events' && (
             <div>
-              <h1 className="text-3xl font-bold text-sportshausen-dark mb-4">Eventos</h1>
-              <div className="card-shadow bg-white p-6 rounded-lg">Tus próximos eventos y propuestas</div>
+              <h1 className="text-3xl font-bold text-sportshausen-dark mb-6">Mis Eventos</h1>
+              <div className="space-y-4">
+                {[
+                  { fecha: '23 Mayo', evento: 'FNL Doomsday', lugar: 'Santiago', estado: 'Confirmado' },
+                  { fecha: '30 Mayo', evento: 'Batalla Nocturna', lugar: 'Santiago', estado: 'Pendiente' },
+                  { fecha: '12 Junio', evento: 'WKC Showdown', lugar: 'Valparaíso', estado: 'Confirmado' },
+                ].map((ev, i) => (
+                  <div key={i} className="card-shadow bg-white p-5 rounded-lg flex items-center justify-between">
+                    <div className="flex gap-4 items-center">
+                      <Calendar className="text-sportshausen-red flex-shrink-0" size={20} />
+                      <div>
+                        <p className="font-bold text-sportshausen-dark">{ev.evento}</p>
+                        <p className="text-sm text-gray-500">{ev.fecha} · {ev.lugar}</p>
+                      </div>
+                    </div>
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${ev.estado === 'Confirmado' ? 'badge-yellow' : 'badge-outline'}`}>
+                      {ev.estado}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
           {activeTab === 'offers' && (
             <div>
-              <h1 className="text-3xl font-bold text-sportshausen-dark mb-4">Ofertas</h1>
-              <div className="card-shadow bg-white p-6 rounded-lg">Ofertas laborales y contrataciones</div>
+              <h1 className="text-3xl font-bold text-sportshausen-dark mb-6">Ofertas Disponibles</h1>
+              <div className="space-y-4">
+                {[
+                  { org: 'FNL', desc: 'Luchador para evento estelar', fecha: '20 Jun', tarifa: '$150.000 CLP' },
+                  { org: 'WKC', desc: 'Combate de campeonato abierto', fecha: '5 Jul', tarifa: '$200.000 CLP' },
+                  { org: '5LC', desc: 'Lucha de apertura de show', fecha: '12 Jul', tarifa: '$80.000 CLP' },
+                ].map((of, i) => (
+                  <div key={i} className="card-shadow bg-white p-5 rounded-lg">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <p className="font-bold text-sportshausen-dark">{of.org} — {of.desc}</p>
+                        <p className="text-sm text-gray-500">{of.fecha}</p>
+                      </div>
+                      <p className="font-bold text-sportshausen-red text-sm">{of.tarifa}</p>
+                    </div>
+                    <button className="btn-primary text-sm px-4 py-2">Postular</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'messages' && (
+            <div>
+              <h1 className="text-3xl font-bold text-sportshausen-dark mb-4">Mensajes</h1>
+              <div className="card-shadow bg-white p-6 rounded-lg text-center">
+                <p className="text-gray-600 mb-4">Accede a tu bandeja de mensajes completa.</p>
+                <Link to="/mensajeria" className="btn-primary inline-block">Ir a Mensajería</Link>
+              </div>
             </div>
           )}
 
           {activeTab === 'notifications' && (
             <div>
-              <h1 className="text-3xl font-bold text-sportshausen-dark mb-4">Notificaciones</h1>
-              <div className="card-shadow bg-white p-6 rounded-lg">Novedades y alertas</div>
+              <h1 className="text-3xl font-bold text-sportshausen-dark mb-6">Notificaciones</h1>
+              <div className="space-y-3">
+                {[
+                  { msg: 'FNL ha visto tu perfil', time: 'Hace 2h', tipo: 'vista' },
+                  { msg: 'Nueva oferta disponible de WKC', time: 'Hace 4h', tipo: 'oferta' },
+                  { msg: 'Tu evento del 23 de Mayo fue confirmado', time: 'Ayer', tipo: 'evento' },
+                ].map((n, i) => (
+                  <div key={i} className="card-shadow bg-white p-4 rounded-lg flex gap-3 items-center">
+                    <div className={`w-2 h-2 rounded-full flex-shrink-0 ${n.tipo === 'oferta' ? 'bg-sportshausen-yellow' : n.tipo === 'evento' ? 'bg-sportshausen-red' : 'bg-sportshausen-gold'}`} />
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-sportshausen-dark">{n.msg}</p>
+                      <p className="text-xs text-gray-500">{n.time}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </main>

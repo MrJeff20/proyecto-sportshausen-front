@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { authAPI } from '../services/api';
+import { authAPI, usersAPI } from '../services/api';
 
 const AuthContext = createContext(null);
 
@@ -18,14 +18,22 @@ export const AuthProvider = ({ children }) => {
     if (savedToken) {
       setToken(savedToken);
     }
+
+    const normalizeUser = (u) => {
+      if (!u) return u;
+      // Usar exclusivamente full_name cuando exista
+      const name = u.full_name || null;
+      return { ...u, displayName: name };
+    };
+
     if (savedUser) {
       try {
         const parsedUser = JSON.parse(savedUser);
-        // Asegurar que el user tenga el role
         if (!parsedUser.role && savedUserType) {
           parsedUser.role = savedUserType;
         }
-        setUser(parsedUser);
+        const normalized = normalizeUser(parsedUser);
+        setUser(normalized);
       } catch (e) {
         console.error('Error parsing saved user:', e);
         localStorage.removeItem('user');
@@ -40,39 +48,45 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await authAPI.login(email, password);
 
-      const authToken = response.data.authToken || response.data.token;
-      let userData = response.data.user || response.data;
+      const data = response.data || response;
+      const authToken = data.authToken || data.token;
+      let userData = data.user || data;
 
-      // Log para debuggear
-      console.log('🔐 LOGIN RESPONSE DATA:', JSON.stringify(response.data, null, 2));
-      console.log('👤 USER DATA:', JSON.stringify(userData, null, 2));
-
-      // Asegurar que userData tenga el role - probar múltiples campos posibles
+      // Normalizar role
       let userRole = userData.role || userData.tipo_usuario || userData.type || 'luchador';
-      
-      // Normalizar nombres de roles por si vienen diferente
-      if (userRole === 'booker') userRole = 'booker';
-      else if (userRole === 'agrupacion' || userRole === 'agrupación') userRole = 'agrupacion';
-      else if (userRole === 'luchador') userRole = 'luchador';
-      else userRole = 'luchador'; // default
-
-      // Asegurar que userData tenga el role normalizado
+      if (userRole === 'agrupación') userRole = 'agrupacion';
+      if (!['booker', 'agrupacion', 'luchador'].includes(userRole)) userRole = 'luchador';
       userData.role = userRole;
 
-      console.log('✅ LOGIN PROCESSED - Role:', userRole);
-
-      // Guardar en localStorage
+      // Guardar mínimo y actualizar estado
       localStorage.setItem('authToken', authToken);
       localStorage.setItem('user', JSON.stringify(userData));
       localStorage.setItem('userType', userRole);
       localStorage.setItem('userId', userData.id || userData.user_id);
       localStorage.setItem('authenticated', 'true');
 
-      // Actualizar estado
       setToken(authToken);
       setUser(userData);
 
-      return { success: true, data: response.data };
+      // Si no incluye full_name, solicitar profile al backend proxy
+      try {
+        const hasFullName = !!(userData.full_name);
+        const uid = userData.id || userData.user_id || localStorage.getItem('userId');
+        if (!hasFullName && uid) {
+          localStorage.setItem('authToken', authToken);
+          const profileResp = await usersAPI.getProfileById(uid);
+          const profileData = profileResp || {};
+          if (profileData && profileData.full_name) {
+            userData = { ...userData, ...profileData };
+            localStorage.setItem('user', JSON.stringify(userData));
+            setUser(userData);
+          }
+        }
+      } catch (e) {
+        console.warn('No se pudo obtener perfil adicional tras login:', e);
+      }
+
+      return { success: true, data };
     } catch (err) {
       setError(err.message);
       return { success: false, error: err.message };
@@ -87,39 +101,42 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await authAPI.signup(name, email, password, role);
 
-      const authToken = response.data.authToken || response.data.token;
-      let userData = response.data.user || response.data;
+      const data = response.data || response;
+      const authToken = data.authToken || data.token;
+      let userData = data.user || data;
 
-      // Log para debuggear
-      console.log('📝 SIGNUP RESPONSE DATA:', JSON.stringify(response.data, null, 2));
-      console.log('👤 USER DATA:', JSON.stringify(userData, null, 2));
-
-      // Asegurar que userData tenga el role - probar múltiples campos posibles
       let userRole = userData.role || userData.tipo_usuario || userData.type || role || 'luchador';
-      
-      // Normalizar nombres de roles
-      if (userRole === 'booker') userRole = 'booker';
-      else if (userRole === 'agrupacion' || userRole === 'agrupación') userRole = 'agrupacion';
-      else if (userRole === 'luchador') userRole = 'luchador';
-      else userRole = 'luchador'; // default
-
-      // Asegurar que userData tenga el role normalizado
+      if (userRole === 'agrupación') userRole = 'agrupacion';
+      if (!['booker', 'agrupacion', 'luchador'].includes(userRole)) userRole = 'luchador';
       userData.role = userRole;
 
-      console.log('✅ SIGNUP PROCESSED - Role:', userRole);
-
-      // Guardar en localStorage
       localStorage.setItem('authToken', authToken);
       localStorage.setItem('user', JSON.stringify(userData));
       localStorage.setItem('userType', userRole);
       localStorage.setItem('userId', userData.id || userData.user_id);
       localStorage.setItem('authenticated', 'true');
 
-      // Actualizar estado
       setToken(authToken);
       setUser(userData);
 
-      return { success: true, data: response.data };
+      try {
+        const hasFullName = !!(userData.full_name);
+        const uid = userData.id || userData.user_id || localStorage.getItem('userId');
+        if (!hasFullName && uid) {
+          localStorage.setItem('authToken', authToken);
+          const profileResp = await usersAPI.getProfileById(uid);
+          const profileData = profileResp || {};
+          if (profileData && profileData.full_name) {
+            userData = { ...userData, ...profileData };
+            localStorage.setItem('user', JSON.stringify(userData));
+            setUser(userData);
+          }
+        }
+      } catch (e) {
+        console.warn('No se pudo obtener perfil adicional tras signup:', e);
+      }
+
+      return { success: true, data };
     } catch (err) {
       setError(err.message);
       return { success: false, error: err.message };
@@ -135,14 +152,12 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       console.error('Error during logout:', err);
     } finally {
-      // Limpiar localStorage
       localStorage.removeItem('authToken');
       localStorage.removeItem('user');
       localStorage.removeItem('authenticated');
       localStorage.removeItem('userType');
       localStorage.removeItem('userId');
 
-      // Limpiar estado
       setToken(null);
       setUser(null);
       setError(null);
@@ -154,16 +169,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{
-        user,
-        token,
-        loading,
-        error,
-        isAuthenticated,
-        login,
-        signup,
-        logout,
-      }}
+      value={{ user, token, loading, error, isAuthenticated, login, signup, logout }}
     >
       {children}
     </AuthContext.Provider>

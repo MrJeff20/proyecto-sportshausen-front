@@ -1,302 +1,287 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Check, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check, X, Calendar, Clock, Trash2 } from 'lucide-react';
 import Header from '../components/Header';
-import Footer from '../components/Footer';
-import CalendlyEmbed from '../components/CalendlyEmbed';
+import SideNav from '../components/SideNav';
+
+const MONTH_NAMES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const DAY_NAMES = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+
+const loadDates = () => {
+  try { return JSON.parse(localStorage.getItem('occupiedDates') || '[]'); }
+  catch { return []; }
+};
+
+const saveDates = (dates) => localStorage.setItem('occupiedDates', JSON.stringify(dates));
 
 export const CalendarioDisponibilidad = () => {
-  const [currentMonth, setCurrentMonth] = useState(4); // Mayo
-  const [currentYear, setCurrentYear] = useState(2026);
-  const [selectedDates, setSelectedDates] = useState([
-    { date: 5, reason: '' },
-    { date: 12, reason: '' },
-    { date: 15, reason: '' },
-    { date: 22, reason: '' },
-    { date: 29, reason: '' }
-  ]);
-  const [showModal, setShowModal] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(null);
+  const today = new Date();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [month, setMonth] = useState(today.getMonth());
+  const [year, setYear] = useState(today.getFullYear());
+  const [occupiedDates, setOccupiedDates] = useState(loadDates);
+  const [modal, setModal] = useState(null); // { date, month, year }
   const [modalReason, setModalReason] = useState('');
-  const [viewMode, setViewMode] = useState('calendly'); // 'calendly' o 'custom'
-  const [calendlyUrl, setCalendlyUrl] = useState('https://calendly.com/roberto-jara-de-la-barra'); // Cambiar por tu URL de Calendly
 
-  // Cargar fechas guardadas del localStorage
-  useEffect(() => {
-    const savedDates = localStorage.getItem('occupiedDates');
-    if (savedDates) {
-      setSelectedDates(JSON.parse(savedDates));
-    }
-  }, []);
+  // Persist on every change
+  useEffect(() => { saveDates(occupiedDates); }, [occupiedDates]);
 
-  // Guardar fechas en localStorage cuando cambien
-  const updateOccupiedDates = (newDates) => {
-    setSelectedDates(newDates);
-    localStorage.setItem('occupiedDates', JSON.stringify(newDates));
-  };
+  const prevMonth = () => { if (month === 0) { setMonth(11); setYear(y => y - 1); } else setMonth(m => m - 1); };
+  const nextMonth = () => { if (month === 11) { setMonth(0); setYear(y => y + 1); } else setMonth(m => m + 1); };
 
-  const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-  const firstDay = new Date(currentYear, currentMonth, 1).getDay();
-
-  const handleDateClick = (date) => {
-    setSelectedDate(date);
-    // Buscar si la fecha tiene un motivo guardado y cargarlo en el modal
-    const occupiedDate = selectedDates.find(d => d.date === date);
-    setModalReason(occupiedDate?.reason || '');
-    setShowModal(true);
-  };
-
-  const daysArray = Array.from({ length: firstDay }, (_, i) => null).concat(
+  // Build calendar grid — Monday-first
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstDay = (new Date(year, month, 1).getDay() + 6) % 7;
+  const calDays = Array.from({ length: firstDay }, () => null).concat(
     Array.from({ length: daysInMonth }, (_, i) => i + 1)
   );
 
-  const toggleDate = (isOccupied) => {
-    if (isOccupied) {
-      // Si está ocupado, lo marcamos como disponible (lo removemos)
-      updateOccupiedDates(selectedDates.filter(d => d.date !== selectedDate));
+  const isOccupied = (d, m, y) => occupiedDates.some(o => o.date === d && o.month === m && o.year === y);
+  const isPast = (d, m, y) => new Date(y, m, d) < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const isToday = (d, m, y) => d === today.getDate() && m === today.getMonth() && y === today.getFullYear();
+
+  const openModal = (date) => {
+    const occ = occupiedDates.find(o => o.date === date && o.month === month && o.year === year);
+    setModalReason(occ?.reason || '');
+    setModal({ date, month, year });
+  };
+
+  const toggleDate = () => {
+    const { date, month: m, year: y } = modal;
+    if (isOccupied(date, m, y)) {
+      setOccupiedDates(prev => prev.filter(o => !(o.date === date && o.month === m && o.year === y)));
     } else {
-      // Si está disponible, lo marcamos como ocupado (lo añadimos)
-      updateOccupiedDates([...selectedDates, { date: selectedDate, reason: modalReason }]);
+      setOccupiedDates(prev => [...prev, { date, month: m, year: y, reason: modalReason }]);
     }
+    setModal(null);
     setModalReason('');
-    setShowModal(false);
   };
 
-  const previousMonth = () => {
-    if (currentMonth === 0) {
-      setCurrentMonth(11);
-      setCurrentYear(currentYear - 1);
-    } else {
-      setCurrentMonth(currentMonth - 1);
-    }
+  const deleteDate = (date, m, y) => {
+    setOccupiedDates(prev => prev.filter(o => !(o.date === date && o.month === m && o.year === y)));
   };
 
-  const nextMonth = () => {
-    if (currentMonth === 11) {
-      setCurrentMonth(0);
-      setCurrentYear(currentYear + 1);
-    } else {
-      setCurrentMonth(currentMonth + 1);
-    }
-  };
+  // Stats for current month
+  const occupiedThisMonth = occupiedDates.filter(o => o.month === month && o.year === year).length;
+  const availableThisMonth = daysInMonth - occupiedThisMonth;
+
+  // Upcoming occupied dates (next 60 days)
+  const upcoming = occupiedDates
+    .filter(o => {
+      const d = new Date(o.year, o.month, o.date);
+      const diff = (d - today) / 86400000;
+      return diff >= 0 && diff <= 60;
+    })
+    .sort((a, b) => new Date(a.year, a.month, a.date) - new Date(b.year, b.month, b.date));
 
   return (
     <div className="min-h-screen bg-sportshausen-light">
-      <Header userType="luchador" />
+      <Header userType="luchador" isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+      <SideNav active="calendar" onSelect={() => {}} isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
 
-      <div className="max-w-6xl mx-auto px-4 py-12 pt-24">
-        <div className="card-shadow bg-white rounded-2xl p-8">
-          <div className="flex justify-between items-center mb-8">
-            <div>
-              <h1 className="text-3xl font-bold text-sportshausen-dark mb-2">Mi Calendario de Disponibilidad</h1>
-              <p className="text-gray-600">Gestiona tus fechas de disponibilidad y reservas</p>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setViewMode('calendly')}
-                className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
-                  viewMode === 'calendly'
-                    ? 'bg-sportshausen-red text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-              >
-                Calendly
-              </button>
-              <button
-                onClick={() => setViewMode('custom')}
-                className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
-                  viewMode === 'custom'
-                    ? 'bg-sportshausen-red text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-              >
-                Personalizado
-              </button>
-            </div>
+      <div className="flex flex-col pt-16 md:ml-64">
+        <div className="max-w-5xl mx-auto w-full px-4 py-8">
+
+          {/* Page header */}
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold text-sportshausen-dark">Mi Disponibilidad</h1>
+            <p className="text-gray-500 mt-1">Marca los días en que estás <strong>ocupado</strong>. Los días sin marcar se muestran como disponibles.</p>
           </div>
 
-          {/* Vista de Calendly */}
-          {viewMode === 'calendly' && (
-            <div className="mb-8 w-full">
-              <div className="bg-white rounded-lg p-0 overflow-hidden">
-                <CalendlyEmbed calendlyUrl={calendlyUrl} />
-              </div>
-              <p className="text-sm text-gray-600 mt-4">
-                💡 Para configurar tu URL de Calendly, reemplaza la URL en el componente con tu enlace personal de Calendly.
-              </p>
-            </div>
-          )}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-          {/* Vista Personalizada */}
-          {viewMode === 'custom' && (
-            <div className="mb-8">
-              <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-sportshausen-dark">
-                {monthNames[currentMonth]} {currentYear}
-              </h2>
-              <div className="flex gap-2">
-                <button
-                  onClick={previousMonth}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <ChevronLeft size={24} className="text-sportshausen-red" />
-                </button>
-                <button
-                  onClick={nextMonth}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <ChevronRight size={24} className="text-sportshausen-red" />
-                </button>
-              </div>
-            </div>
+            {/* Left: Main calendar */}
+            <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm p-6">
 
-            {/* Days Header */}
-            <div className="grid grid-cols-7 gap-2 mb-4">
-              {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sab', 'Dom'].map((day) => (
-                <div key={day} className="text-center font-bold text-gray-600 py-3">
-                  {day}
+              {/* Month navigation */}
+              <div className="flex items-center justify-between mb-6">
+                <button onClick={prevMonth} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                  <ChevronLeft size={22} className="text-sportshausen-red" />
+                </button>
+                <div className="text-center">
+                  <h2 className="text-2xl font-bold text-sportshausen-dark">{MONTH_NAMES[month]}</h2>
+                  <p className="text-gray-400 text-sm">{year}</p>
                 </div>
-              ))}
+                <button onClick={nextMonth} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                  <ChevronRight size={22} className="text-sportshausen-red" />
+                </button>
+              </div>
+
+              {/* Day headers */}
+              <div className="grid grid-cols-7 mb-2">
+                {DAY_NAMES.map(d => (
+                  <div key={d} className="text-center text-xs font-bold text-gray-400 py-2">{d}</div>
+                ))}
+              </div>
+
+              {/* Calendar grid */}
+              <div className="grid grid-cols-7 gap-1">
+                {calDays.map((date, idx) => {
+                  if (!date) return <div key={idx} />;
+                  const occ = isOccupied(date, month, year);
+                  const past = isPast(date, month, year);
+                  const tod = isToday(date, month, year);
+                  return (
+                    <button
+                      key={idx}
+                      disabled={past}
+                      onClick={() => openModal(date)}
+                      className={`relative h-12 rounded-xl text-sm font-semibold transition-all focus:outline-none ${
+                        past   ? 'bg-gray-100 text-gray-300 cursor-not-allowed' :
+                        occ    ? 'bg-sportshausen-red text-white shadow-sm hover:bg-red-700' :
+                                 'cal-disponible hover:shadow-md'
+                      } ${tod && !occ ? 'ring-2 ring-sportshausen-red' : ''}`}
+                    >
+                      {date}
+                      {tod && (
+                        <span className={`absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full ${occ ? 'bg-red-200' : 'bg-sportshausen-red'}`} />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Legend */}
+              <div className="flex flex-wrap gap-5 mt-6 pt-4 border-t border-gray-100">
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 rounded-lg" style={{background:'#FFF3C0',border:'1.5px solid #FFD100'}} />
+                  <span className="text-xs text-gray-600">Disponible</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 rounded-lg bg-sportshausen-red" />
+                  <span className="text-xs text-gray-600">Ocupado</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 rounded-lg bg-gray-100" />
+                  <span className="text-xs text-gray-600">Pasado</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 rounded-lg cal-disponible ring-2 ring-sportshausen-red" />
+                  <span className="text-xs text-gray-600">Hoy</span>
+                </div>
+              </div>
             </div>
 
-            {/* Days Grid */}
-            <div className="grid grid-cols-7 gap-2">
-              {daysArray.map((date, idx) => {
-                const isOccupied = date && selectedDates.some(d => d.date === date);
-                const isPast = date && new Date(currentYear, currentMonth, date) < new Date();
+            {/* Right: Stats + upcoming */}
+            <div className="space-y-4">
 
-                return (
-                  <div
-                    key={idx}
-                    onClick={() => date && !isPast && handleDateClick(date)}
-                    className={`p-4 rounded-lg text-center font-semibold h-16 flex items-center justify-center cursor-pointer transition-all ${
-                      !date
-                        ? ''
-                        : isPast
-                        ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                        : isOccupied
-                        ? 'bg-sportshausen-red text-white hover:shadow-lg'
-                        : 'bg-green-100 text-green-700 border-2 border-green-500 hover:shadow-lg'
-                    }`}
-                  >
-                    {date}
+              {/* Stats */}
+              <div className="bg-white rounded-2xl shadow-sm p-5">
+                <h3 className="font-bold text-sportshausen-dark mb-4 flex items-center gap-2">
+                  <Calendar size={16} className="text-sportshausen-red" />
+                  {MONTH_NAMES[month]}
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Días disponibles</span>
+                    <span className="font-bold text-sportshausen-dark text-lg">{availableThisMonth}</span>
                   </div>
-                );
-              })}
-            </div>
+                  <div className="w-full bg-gray-100 rounded-full h-2">
+                    <div
+                      className="h-2 rounded-full bg-sportshausen-gold transition-all"
+                      style={{ width: `${(availableThisMonth / daysInMonth) * 100}%` }}
+                    />
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Días ocupados</span>
+                    <span className="font-bold text-sportshausen-red text-lg">{occupiedThisMonth}</span>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-2">
+                    <div
+                      className="h-2 rounded-full bg-sportshausen-red transition-all"
+                      style={{ width: `${(occupiedThisMonth / daysInMonth) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
 
-            {/* Legend */}
-            <div className="flex flex-col md:flex-row gap-8 mt-8 p-4 bg-sportshausen-light rounded-lg">
-              <div className="flex items-center gap-3">
-                <div className="w-6 h-6 bg-green-100 border-2 border-green-500 rounded"></div>
-                <span className="text-sm text-gray-600"><strong>Verde:</strong> Disponible</span>
+              {/* Upcoming occupied dates */}
+              <div className="bg-white rounded-2xl shadow-sm p-5">
+                <h3 className="font-bold text-sportshausen-dark mb-3 flex items-center gap-2">
+                  <Clock size={16} className="text-sportshausen-red" />
+                  Próximas fechas ocupadas
+                </h3>
+                {upcoming.length === 0 ? (
+                  <p className="text-sm text-gray-400 text-center py-4">Sin fechas ocupadas en los próximos 60 días</p>
+                ) : (
+                  <ul className="space-y-2">
+                    {upcoming.map((o, i) => (
+                      <li key={i} className="flex items-start justify-between gap-2 py-2 border-b border-gray-50 last:border-0">
+                        <div>
+                          <p className="text-sm font-semibold text-sportshausen-dark">
+                            {o.date} de {MONTH_NAMES[o.month]} {o.year !== today.getFullYear() ? o.year : ''}
+                          </p>
+                          {o.reason && <p className="text-xs text-gray-500 mt-0.5">{o.reason}</p>}
+                        </div>
+                        <button
+                          onClick={() => deleteDate(o.date, o.month, o.year)}
+                          className="text-gray-300 hover:text-sportshausen-red transition-colors flex-shrink-0 mt-0.5"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
-              <div className="flex items-center gap-3">
-                <div className="w-6 h-6 bg-sportshausen-red rounded"></div>
-                <span className="text-sm text-gray-600"><strong>Rojo:</strong> Ocupado</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-6 h-6 bg-gray-200 rounded"></div>
-                <span className="text-sm text-gray-600"><strong>Gris:</strong> Pasado (no editable)</span>
-              </div>
-            </div>
 
-            {/* Action Buttons */}
-            <div className="flex gap-4 justify-center mt-8">
-              <button 
-                onClick={() => {
-                  // Recargar las fechas guardadas del localStorage
-                  const savedDates = localStorage.getItem('occupiedDates');
-                  if (savedDates) {
-                    setSelectedDates(JSON.parse(savedDates));
-                  } else {
-                    // Si no hay nada guardado, resetear a valores iniciales
-                    setSelectedDates([
-                      { date: 5, reason: '' },
-                      { date: 12, reason: '' },
-                      { date: 15, reason: '' },
-                      { date: 22, reason: '' },
-                      { date: 29, reason: '' }
-                    ]);
-                  }
-                }}
-                className="btn-secondary px-8 py-3">
-                Descartar Cambios
-              </button>
-              <button 
-                onClick={() => alert('✅ Cambios guardados exitosamente')}
-                className="btn-primary px-8 py-3">
-                Guardar Cambios
-              </button>
+              {/* Quick tip */}
+              <div className="bg-sportshausen-gold/10 border border-sportshausen-gold/30 rounded-2xl p-4">
+                <p className="text-xs text-gray-700">
+                  <strong>Consejo:</strong> Haz clic en cualquier día futuro para marcarlo como ocupado o disponible. Los cambios se guardan automáticamente.
+                </p>
+              </div>
             </div>
-            </div>
-          )}
+          </div>
         </div>
       </div>
 
       {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl max-w-md w-full p-8">
-            <h3 className="text-2xl font-bold text-sportshausen-dark mb-6">
-              {selectedDate} de {monthNames[currentMonth]}
+      {modal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl">
+            <h3 className="text-xl font-bold text-sportshausen-dark mb-1">
+              {modal.date} de {MONTH_NAMES[modal.month]}
             </h3>
-
-            <div className="space-y-4 mb-6">
-              <p className="text-gray-600">¿Estás disponible este día?</p>
-              <div>
-                <label className="block text-sm font-semibold text-sportshausen-dark mb-2">
-                  Motivo (opcional)
-                </label>
-                <textarea
-                  value={modalReason}
-                  onChange={(e) => setModalReason(e.target.value)}
-                  placeholder="Ej: Evento especial, viaje, descanso..."
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 ring-sportshausen-red outline-none text-sm"
-                  rows="3"
-                ></textarea>
-              </div>
-            </div>
-
-            <div className="flex gap-4">
+            <p className="text-sm text-gray-500 mb-4">
+              {isOccupied(modal.date, modal.month, modal.year)
+                ? 'Este día está marcado como ocupado.'
+                : 'Este día está disponible.'}
+            </p>
+            <label className="block text-sm font-semibold text-sportshausen-dark mb-1">Motivo (opcional)</label>
+            <textarea
+              value={modalReason}
+              onChange={e => setModalReason(e.target.value)}
+              placeholder="Ej: Evento, viaje, descanso..."
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 ring-sportshausen-red resize-none mb-4"
+              rows={2}
+            />
+            <div className="flex gap-3">
               <button
-                onClick={() => {
-                  setShowModal(false);
-                  setModalReason('');
-                }}
-                className="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-600 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
+                onClick={() => { setModal(null); setModalReason(''); }}
+                className="flex-1 px-4 py-2 border border-gray-200 text-gray-600 rounded-lg text-sm font-semibold hover:bg-gray-50"
               >
                 Cerrar
               </button>
               <button
-                onClick={() => toggleDate(selectedDates.some(d => d.date === selectedDate))}
-                className={`flex-1 px-4 py-2 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 ${
-                  selectedDates.some(d => d.date === selectedDate)
-                    ? 'btn-outline'
+                onClick={toggleDate}
+                className={`flex-1 px-4 py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-colors ${
+                  isOccupied(modal.date, modal.month, modal.year)
+                    ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     : 'btn-primary'
                 }`}
               >
-                {selectedDates.some(d => d.date === selectedDate) ? (
-                  <>
-                    <X size={18} />
-                    Marcar Disponible
-                  </>
+                {isOccupied(modal.date, modal.month, modal.year) ? (
+                  <><X size={15} /> Marcar disponible</>
                 ) : (
-                  <>
-                    <Check size={18} />
-                    Marcar Ocupado
-                  </>
+                  <><Check size={15} /> Marcar ocupado</>
                 )}
               </button>
             </div>
           </div>
         </div>
       )}
-
-      <Footer />
     </div>
   );
 };
 
 export default CalendarioDisponibilidad;
-

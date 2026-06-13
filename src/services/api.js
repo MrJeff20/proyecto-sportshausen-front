@@ -72,6 +72,9 @@ export const usersAPI = {
 
   getById: (id) => apiCall(`/users/${id}`),
 
+  // Endpoint proxy for profile (backend provides /api/profile/:id)
+  getProfileById: (id) => apiCall(`/profile/${id}`),
+
   create: (userData) =>
     apiCall('/users', {
       method: 'POST',

@@ -50,10 +50,8 @@ export const LoginPage = () => {
         
         // Redirigir según el tipo de usuario (usar lo que se guardó en localStorage)
         const userType = localStorage.getItem('userType') || 'luchador';
-        console.log('🚀 LOGIN REDIRECT - userType from localStorage:', userType);
         setTimeout(() => {
-          const dashboardUrl = `/dashboard/${userType}`;
-          console.log('🚀 LOGIN REDIRECT - Target URL:', dashboardUrl);
+          const dashboardUrl = userType === 'luchador' ? '/panel/luchador' : `/dashboard/${userType}`;
           navigate(dashboardUrl, { replace: true });
         }, 2500);
       } else {

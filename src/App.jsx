@@ -3,12 +3,16 @@ import './App.css';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
-import LuchadorDashboard from './pages/LuchadorDashboard';
 import BookerDashboard from './pages/BookerDashboard';
 import AgrupacionDashboard from './pages/AgrupacionDashboard';
 import PanelDeLuchador from './pages/PanelDeLuchador';
+import LuchadorDashboard from './pages/LuchadorDashboard';
+import MisEventos from './pages/MisEventos';
+import Ofertas from './pages/Ofertas';
+import Notificaciones from './pages/Notificaciones';
 import PerfilLuchador from './pages/PerfilLuchador';
 import { CalendarioDisponibilidad } from './pages/CalendarioDisponibilidad';
+import Mensajeria from './pages/Mensajeria';
 import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
@@ -42,11 +46,7 @@ function App() {
         {/* Rutas de Dashboard - Protegidas, accesibles solo autenticados */}
         <Route
           path="/dashboard/luchador"
-          element={
-            <ProtectedRoute requiredRole="luchador">
-              <LuchadorDashboard />
-            </ProtectedRoute>
-          }
+          element={<Navigate to="/panel/luchador" replace />}
         />
         <Route
           path="/dashboard/booker"
@@ -91,6 +91,21 @@ function App() {
           element={
             <ProtectedRoute>
               <CalendarioDisponibilidad />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Eventos, Ofertas, Notificaciones */}
+        <Route path="/mis-eventos" element={<ProtectedRoute><MisEventos /></ProtectedRoute>} />
+        <Route path="/ofertas" element={<ProtectedRoute><Ofertas /></ProtectedRoute>} />
+        <Route path="/notificaciones" element={<ProtectedRoute><Notificaciones /></ProtectedRoute>} />
+
+        {/* Mensajería */}
+        <Route
+          path="/mensajeria"
+          element={
+            <ProtectedRoute>
+              <Mensajeria />
             </ProtectedRoute>
           }
         />

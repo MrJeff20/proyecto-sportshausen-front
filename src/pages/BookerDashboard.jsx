@@ -40,7 +40,7 @@ export const BookerDashboard = () => {
       <div className="flex h-screen pt-16">
         <SideNav active={activeTab} onSelect={(id)=>setActiveTab(id)} isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
         {/* Main Content */}
-        <main className="flex-1 overflow-auto p-8">
+        <main className="flex-1 overflow-auto p-4 md:p-8 md:ml-64">
           {activeTab === 'home' && (
             <div>
               <h1 className="text-4xl font-bold text-sportshausen-dark mb-2">Descubre Nuevo Talento</h1>
@@ -158,9 +158,111 @@ export const BookerDashboard = () => {
             </div>
           )}
 
-          {activeTab !== 'home' && activeTab !== 'search' && (
-            <div className="card-shadow bg-white p-12 rounded-lg text-center">
-              <p className="text-xl text-gray-600">Sección en construcción</p>
+          {activeTab === 'messages' && (
+            <div>
+              <h1 className="text-3xl font-bold text-sportshausen-dark mb-6">Mensajes</h1>
+              <div className="card-shadow bg-white p-6 rounded-lg text-center">
+                <p className="text-gray-600 mb-4">Accede a tu bandeja de mensajes.</p>
+                <a href="/mensajeria" className="btn-primary inline-block">Ir a Mensajería</a>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'contracts' && (
+            <div>
+              <h1 className="text-3xl font-bold text-sportshausen-dark mb-6">Órdenes de Contratación</h1>
+              <div className="space-y-4">
+                {[
+                  { luchador: 'Phoenix', evento: 'Show Julio', fecha: '15 Jul', estado: 'Activo', monto: '$200.000' },
+                  { luchador: 'Titán', evento: 'Noche de Campeones', fecha: '22 Jul', estado: 'Pendiente', monto: '$150.000' },
+                  { luchador: 'Dragón', evento: 'FNL Doomsday', fecha: '23 May', estado: 'Completado', monto: '$180.000' },
+                ].map((c, i) => (
+                  <div key={i} className="card-shadow bg-white p-5 rounded-lg flex items-center justify-between">
+                    <div>
+                      <p className="font-bold text-sportshausen-dark">{c.luchador} — {c.evento}</p>
+                      <p className="text-sm text-gray-500">{c.fecha}</p>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <p className="font-bold text-sportshausen-red">{c.monto}</p>
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                        c.estado === 'Activo' ? 'badge-yellow' :
+                        c.estado === 'Pendiente' ? 'badge-outline' :
+                        'badge-dark'
+                      }`}>{c.estado}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'profile' && (
+            <div>
+              <h1 className="text-3xl font-bold text-sportshausen-dark mb-6">Mi Perfil de Booker</h1>
+              <div className="card-shadow bg-white p-6 rounded-lg space-y-4 max-w-xl">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Nombre</label>
+                  <input defaultValue="User Booker" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 ring-sportshausen-red outline-none" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Email</label>
+                  <input defaultValue="booker@sportshausen.cl" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 ring-sportshausen-red outline-none" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Organización</label>
+                  <input defaultValue="Booking Pro Events" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 ring-sportshausen-red outline-none" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Ciudad</label>
+                  <input defaultValue="Santiago" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 ring-sportshausen-red outline-none" />
+                </div>
+                <button className="btn-primary">Guardar Cambios</button>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'calendar' && (
+            <div>
+              <h1 className="text-3xl font-bold text-sportshausen-dark mb-6">Calendario de Eventos</h1>
+              <div className="space-y-4">
+                {[
+                  { fecha: '15 Jul', evento: 'Show Julio', lugar: 'Santiago', luchadores: 6 },
+                  { fecha: '22 Jul', evento: 'Noche de Campeones', lugar: 'Valparaíso', luchadores: 8 },
+                  { fecha: '5 Ago', evento: 'Gran Final', lugar: 'Concepción', luchadores: 10 },
+                ].map((ev, i) => (
+                  <div key={i} className="card-shadow bg-white p-5 rounded-lg flex items-center justify-between">
+                    <div className="flex gap-4 items-center">
+                      <Calendar className="text-sportshausen-red" size={20} />
+                      <div>
+                        <p className="font-bold text-sportshausen-dark">{ev.evento}</p>
+                        <p className="text-sm text-gray-500">{ev.fecha} · {ev.lugar}</p>
+                      </div>
+                    </div>
+                    <span className="text-sm text-gray-600">{ev.luchadores} luchadores</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'notifications' && (
+            <div>
+              <h1 className="text-3xl font-bold text-sportshausen-dark mb-6">Notificaciones</h1>
+              <div className="space-y-3">
+                {[
+                  { msg: 'Phoenix aceptó tu propuesta', time: 'Hace 1h' },
+                  { msg: 'Nuevo luchador disponible en Santiago', time: 'Hace 3h' },
+                  { msg: 'Titán vio tu oferta', time: 'Ayer' },
+                ].map((n, i) => (
+                  <div key={i} className="card-shadow bg-white p-4 rounded-lg flex gap-3 items-center">
+                    <div className="w-2 h-2 rounded-full bg-sportshausen-red flex-shrink-0" />
+                    <div>
+                      <p className="text-sm font-semibold text-sportshausen-dark">{n.msg}</p>
+                      <p className="text-xs text-gray-500">{n.time}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </main>
