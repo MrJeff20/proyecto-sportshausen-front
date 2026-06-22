@@ -2,7 +2,7 @@ import React from 'react';
 
 export const LoadingPage = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white">
+    <div className="min-h-screen flex items-center justify-center bg-sporthausen-neutral-light">
       <div className="text-center">
         <div className="mb-8">
           <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-300 border-t-sportshausen-red mx-auto"></div>

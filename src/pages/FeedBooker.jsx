@@ -61,7 +61,7 @@ export const FeedBooker = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-sporthausen-neutral-light">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4">
@@ -81,30 +81,30 @@ export const FeedBooker = () => {
                 <input
                   type="text"
                   placeholder="Busca talentos, eventos..."
-                  className="w-full pl-10 pr-4 py-2 bg-gray-100 rounded-full focus:bg-white focus:ring-2 ring-sportshausen-red outline-none transition-all"
+                  className="w-full pl-10 pr-4 py-2 bg-gray-100 rounded-full focus:bg-white focus:ring-2 ring-sporthausen-secondary outline-none transition-all"
                 />
               </div>
             </div>
 
             {/* Navigation Icons */}
             <nav className="flex items-center gap-1 md:gap-2">
-              <button className="p-2 hover:bg-gray-100 rounded-full transition-colors group" title="Inicio">
+              <button className="p-2 hover:bg-sporthausen-neutral-light rounded-full transition-colors group" title="Inicio">
                 <Home size={20} className="text-gray-600 group-hover:text-sportshausen-red" />
               </button>
-              <button className="p-2 hover:bg-gray-100 rounded-full transition-colors group" title="Talentos">
+              <button className="p-2 hover:bg-sporthausen-neutral-light rounded-full transition-colors group" title="Talentos">
                 <Users size={20} className="text-gray-600 group-hover:text-sportshausen-red" />
               </button>
-              <button className="p-2 hover:bg-gray-100 rounded-full transition-colors group" title="Mis eventos">
+              <button className="p-2 hover:bg-sporthausen-neutral-light rounded-full transition-colors group" title="Mis eventos">
                 <Calendar size={20} className="text-gray-600 group-hover:text-sportshausen-red" />
               </button>
-              <button className="p-2 hover:bg-gray-100 rounded-full transition-colors group" title="Contrataciones">
+              <button className="p-2 hover:bg-sporthausen-neutral-light rounded-full transition-colors group" title="Contrataciones">
                 <Briefcase size={20} className="text-gray-600 group-hover:text-sportshausen-red" />
               </button>
-              <button className="p-2 hover:bg-gray-100 rounded-full transition-colors group relative" title="Mensajes">
+              <button className="p-2 hover:bg-sporthausen-neutral-light rounded-full transition-colors group relative" title="Mensajes">
                 <MessageCircle size={20} className="text-gray-600 group-hover:text-sportshausen-red" />
                 <span className="absolute top-1 right-1 w-2 h-2 bg-sportshausen-red rounded-full"></span>
               </button>
-              <button className="p-2 hover:bg-gray-100 rounded-full transition-colors group relative" title="Notificaciones">
+              <button className="p-2 hover:bg-sporthausen-neutral-light rounded-full transition-colors group relative" title="Notificaciones">
                 <Bell size={20} className="text-gray-600 group-hover:text-sportshausen-red" />
                 <span className="absolute top-1 right-1 w-2 h-2 bg-sportshausen-red rounded-full"></span>
               </button>
@@ -190,19 +190,19 @@ export const FeedBooker = () => {
                 <input
                   type="text"
                   placeholder="¿Necesitas talentos? Publica tu evento aquí..."
-                  className="flex-1 bg-gray-100 rounded-full px-4 py-2 hover:bg-gray-200 transition-colors focus:bg-white focus:ring-2 ring-sportshausen-red outline-none"
+                  className="flex-1 bg-gray-100 rounded-full px-4 py-2 hover:bg-gray-200 transition-colors focus:bg-white focus:ring-2 ring-sporthausen-secondary outline-none"
                 />
               </div>
               <div className="flex gap-2 mt-4 pt-4 border-t border-gray-200">
-                <button className="flex-1 flex items-center justify-center gap-2 py-2 text-gray-600 hover:bg-gray-50 rounded transition-colors">
+                <button className="flex-1 flex items-center justify-center gap-2 py-2 text-gray-600 hover:bg-sporthausen-neutral-light rounded transition-colors">
                   <Calendar size={18} />
                   <span className="text-sm">Evento</span>
                 </button>
-                <button className="flex-1 flex items-center justify-center gap-2 py-2 text-gray-600 hover:bg-gray-50 rounded transition-colors">
+                <button className="flex-1 flex items-center justify-center gap-2 py-2 text-gray-600 hover:bg-sporthausen-neutral-light rounded transition-colors">
                   <Users size={18} />
                   <span className="text-sm">Busco Talento</span>
                 </button>
-                <button className="flex-1 flex items-center justify-center gap-2 py-2 text-gray-600 hover:bg-gray-50 rounded transition-colors">
+                <button className="flex-1 flex items-center justify-center gap-2 py-2 text-gray-600 hover:bg-sporthausen-neutral-light rounded transition-colors">
                   <Zap size={18} />
                   <span className="text-sm">Urgente</span>
                 </button>
@@ -223,7 +223,7 @@ export const FeedBooker = () => {
                       <p className="text-sm text-gray-600">Publicado {opp.time}</p>
                     </div>
                   </div>
-                  <button className="p-2 hover:bg-gray-100 rounded transition-colors">
+                  <button className="p-2 hover:bg-sporthausen-neutral-light rounded transition-colors">
                     <MoreHorizontal size={18} className="text-gray-400" />
                   </button>
                 </div>
@@ -269,17 +269,17 @@ export const FeedBooker = () => {
                     className={`flex-1 flex items-center justify-center gap-2 py-2 rounded transition-colors font-semibold ${
                       likedPosts.includes(opp.id)
                         ? 'text-sportshausen-red bg-red-50'
-                        : 'text-gray-600 hover:bg-gray-50'
+                        : 'text-gray-600 hover:bg-sporthausen-neutral-light'
                     }`}
                   >
                     <Heart size={18} className={likedPosts.includes(opp.id) ? 'fill-sportshausen-red' : ''} />
                     Me interesa
                   </button>
-                  <button className="flex-1 flex items-center justify-center gap-2 py-2 text-gray-600 hover:bg-gray-50 rounded transition-colors font-semibold">
+                  <button className="flex-1 flex items-center justify-center gap-2 py-2 text-gray-600 hover:bg-sporthausen-neutral-light rounded transition-colors font-semibold">
                     <MessageSquare size={18} />
                     Ver Solicitudes
                   </button>
-                  <button className="flex-1 flex items-center justify-center gap-2 py-2 text-gray-600 hover:bg-gray-50 rounded transition-colors font-semibold">
+                  <button className="flex-1 flex items-center justify-center gap-2 py-2 text-gray-600 hover:bg-sporthausen-neutral-light rounded transition-colors font-semibold">
                     <Share2 size={18} />
                     Compartir
                   </button>

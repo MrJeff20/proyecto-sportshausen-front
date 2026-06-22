@@ -94,14 +94,14 @@ export const CalendarioDisponibilidad = () => {
 
               {/* Month navigation */}
               <div className="flex items-center justify-between mb-6">
-                <button onClick={prevMonth} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                <button onClick={prevMonth} className="p-2 hover:bg-sporthausen-neutral-light rounded-lg transition-colors">
                   <ChevronLeft size={22} className="text-sportshausen-red" />
                 </button>
                 <div className="text-center">
                   <h2 className="text-2xl font-bold text-sportshausen-dark">{MONTH_NAMES[month]}</h2>
                   <p className="text-gray-400 text-sm">{year}</p>
                 </div>
-                <button onClick={nextMonth} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                <button onClick={nextMonth} className="p-2 hover:bg-sporthausen-neutral-light rounded-lg transition-colors">
                   <ChevronRight size={22} className="text-sportshausen-red" />
                 </button>
               </div>
@@ -252,13 +252,13 @@ export const CalendarioDisponibilidad = () => {
               value={modalReason}
               onChange={e => setModalReason(e.target.value)}
               placeholder="Ej: Evento, viaje, descanso..."
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 ring-sportshausen-red resize-none mb-4"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 ring-sporthausen-secondary resize-none mb-4"
               rows={2}
             />
             <div className="flex gap-3">
               <button
                 onClick={() => { setModal(null); setModalReason(''); }}
-                className="flex-1 px-4 py-2 border border-gray-200 text-gray-600 rounded-lg text-sm font-semibold hover:bg-gray-50"
+                className="flex-1 px-4 py-2 border border-gray-200 text-gray-600 rounded-lg text-sm font-semibold hover:bg-sporthausen-neutral-light"
               >
                 Cerrar
               </button>

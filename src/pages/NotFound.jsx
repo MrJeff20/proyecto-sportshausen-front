@@ -19,7 +19,7 @@ const NotFound = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-sporthausen-neutral-light flex flex-col">
       <Header userType={isAuthenticated ? user?.role : 'guest'} />
 
       <div className="flex-1 flex items-center justify-center px-4 py-20">
@@ -52,7 +52,7 @@ const NotFound = () => {
           </div>
 
           {/* Additional info */}
-          <div className="bg-gray-50 rounded-lg p-6">
+          <div className="bg-sporthausen-neutral-light rounded-lg p-6">
             <p className="text-sm text-gray-600 mb-4">
               Si crees que esto es un error, intenta:
             </p>

@@ -106,7 +106,7 @@ export const PerfilLuchador = () => {
   });
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-sporthausen-neutral-light">
       <Header userType="luchador" isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
       <SideNav active={'profile'} onSelect={()=>{}} isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
 
@@ -211,10 +211,10 @@ export const PerfilLuchador = () => {
                 Disponibilidad — {monthNames[calMonth]} {calYear}
               </h2>
               <div className="flex gap-1">
-                <button onClick={() => { if (calMonth === 0) { setCalMonth(11); setCalYear(y => y - 1); } else setCalMonth(m => m - 1); }} className="p-1.5 hover:bg-gray-100 rounded">
+                <button onClick={() => { if (calMonth === 0) { setCalMonth(11); setCalYear(y => y - 1); } else setCalMonth(m => m - 1); }} className="p-1.5 hover:bg-sporthausen-neutral-light rounded">
                   <ChevronLeft size={18} className="text-sportshausen-red" />
                 </button>
-                <button onClick={() => { if (calMonth === 11) { setCalMonth(0); setCalYear(y => y + 1); } else setCalMonth(m => m + 1); }} className="p-1.5 hover:bg-gray-100 rounded">
+                <button onClick={() => { if (calMonth === 11) { setCalMonth(0); setCalYear(y => y + 1); } else setCalMonth(m => m + 1); }} className="p-1.5 hover:bg-sporthausen-neutral-light rounded">
                   <ChevronRight size={18} className="text-sportshausen-red" />
                 </button>
               </div>
@@ -373,7 +373,7 @@ export const PerfilLuchador = () => {
                 <input
                   type="text"
                   placeholder="Ej: Lucha Especial"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 ring-sportshausen-red outline-none"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 ring-sporthausen-secondary outline-none"
                 />
               </div>
               <div>
@@ -382,7 +382,7 @@ export const PerfilLuchador = () => {
                 </label>
                 <textarea
                   placeholder="Cuéntanos sobre el evento..."
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 ring-sportshausen-red outline-none"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 ring-sporthausen-secondary outline-none"
                   rows="4"
                 ></textarea>
               </div>
@@ -392,7 +392,7 @@ export const PerfilLuchador = () => {
                 </label>
                 <input
                   type="date"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 ring-sportshausen-red outline-none"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 ring-sporthausen-secondary outline-none"
                 />
               </div>
               <div>
@@ -402,14 +402,14 @@ export const PerfilLuchador = () => {
                 <input
                   type="number"
                   placeholder="0"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 ring-sportshausen-red outline-none"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 ring-sporthausen-secondary outline-none"
                 />
               </div>
               <div className="flex gap-4 mt-6">
                 <button
                   type="button"
                   onClick={() => setShowContactModal(false)}
-                  className="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-600 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
+                  className="flex-1 px-4 py-2 border-2 border-gray-300 text-gray-600 rounded-lg font-semibold hover:bg-sporthausen-neutral-light transition-colors"
                 >
                   Cancelar
                 </button>

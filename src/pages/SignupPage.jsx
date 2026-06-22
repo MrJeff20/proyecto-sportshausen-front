@@ -118,13 +118,13 @@ export const SignupPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-sporthausen-neutral-light">
       <Header userType="guest" />
 
       <div className="flex items-center justify-center min-h-[calc(100vh-64px)] py-12 px-4 pt-24">
         <div className="w-full max-w-md">
           {/* Back Button */}
-          <Link to="/" className="inline-flex items-center gap-2 text-sportshausen-red hover:text-red-700 font-semibold mb-8 transition-colors">
+          <Link to="/" className="inline-flex items-center gap-2 text-sporthausen-primary hover:text-sporthausen-secondary font-semibold mb-8 transition-colors">
             <ArrowLeft size={20} />
             Volver
           </Link>
@@ -133,7 +133,7 @@ export const SignupPage = () => {
           <div className="card-shadow bg-white rounded-2xl p-8 md:p-10">
             {/* Header */}
             <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-gradient-to-br from-sportshausen-red to-red-700 rounded-xl flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-gradient-to-br from-sporthausen-primary to-sporthausen-secondary rounded-xl flex items-center justify-center mx-auto mb-4">
                 <UserPlus size={32} className="text-white" />
               </div>
               <h1 className="text-3xl font-display font-bold text-sportshausen-dark mb-2">
@@ -157,7 +157,7 @@ export const SignupPage = () => {
                   value={formData.name}
                   onChange={handleInputChange}
                   placeholder={formData.role === 'luchador' ? 'Tu alias...' : formData.role === 'booker' ? 'Tu nombre...' : 'Nombre de tu agrupación...'}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 ring-sportshausen-red outline-none transition-all"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 ring-sporthausen-secondary outline-none transition-all"
                 />
               </div>
 
@@ -172,7 +172,7 @@ export const SignupPage = () => {
                   value={formData.email}
                   onChange={handleInputChange}
                   placeholder="tu@email.com"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 ring-sportshausen-red outline-none transition-all"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 ring-sporthausen-secondary outline-none transition-all"
                 />
               </div>
 
@@ -188,12 +188,12 @@ export const SignupPage = () => {
                     value={formData.password}
                     onChange={handleInputChange}
                     placeholder="Tu contraseña"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 ring-sportshausen-red outline-none transition-all"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 ring-sporthausen-secondary outline-none transition-all"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-sportshausen-red transition-colors"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-sporthausen-secondary transition-colors"
                   >
                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
@@ -211,7 +211,7 @@ export const SignupPage = () => {
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
                   placeholder="Confirma tu contraseña"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 ring-sportshausen-red outline-none transition-all"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 ring-sporthausen-secondary outline-none transition-all"
                 />
               </div>
 
@@ -224,7 +224,7 @@ export const SignupPage = () => {
                   name="role"
                   value={formData.role}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 ring-sportshausen-red outline-none transition-all bg-white"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 ring-sporthausen-secondary outline-none transition-all bg-white"
                 >
                   <option value="luchador">🥋 Luchador</option>
                   <option value="booker">📋 Booker</option>
@@ -242,7 +242,7 @@ export const SignupPage = () => {
                   className="w-5 h-5 rounded border-gray-300 mt-1"
                 />
                 <span className="text-sm text-gray-600">
-                  Acepto los <a href="#" className="text-sportshausen-red hover:underline font-semibold">Términos y Condiciones</a> y la <a href="#" className="text-sportshausen-red hover:underline font-semibold">Política de Privacidad</a>
+                  Acepto los <a href="#" className="text-sporthausen-secondary hover:underline font-semibold">Términos y Condiciones</a> y la <a href="#" className="text-sporthausen-secondary hover:underline font-semibold">Política de Privacidad</a>
                 </span>
               </label>
 
@@ -267,7 +267,7 @@ export const SignupPage = () => {
             <div className="text-center mt-8 pt-8 border-t border-gray-200">
               <p className="text-gray-600">
                 ¿Ya tienes cuenta?
-                <Link to="/login" className="ml-2 text-sportshausen-red hover:text-red-700 font-semibold transition-colors">
+                <Link to="/login" className="ml-2 text-sporthausen-primary hover:text-sporthausen-secondary font-semibold transition-colors">
                   Inicia sesión
                 </Link>
               </p>
@@ -277,15 +277,15 @@ export const SignupPage = () => {
           {/* Benefits */}
           <div className="mt-12 space-y-3">
             <div className="flex items-center gap-3">
-              <Check size={20} className="text-sportshausen-red flex-shrink-0" />
+              <Check size={20} className="text-sporthausen-secondary flex-shrink-0" />
               <span className="text-sm text-gray-600">Acceso inmediato a la plataforma</span>
             </div>
             <div className="flex items-center gap-3">
-              <Check size={20} className="text-sportshausen-red flex-shrink-0" />
+              <Check size={20} className="text-sporthausen-secondary flex-shrink-0" />
               <span className="text-sm text-gray-600">Perfil verificado y profesional</span>
             </div>
             <div className="flex items-center gap-3">
-              <Check size={20} className="text-sportshausen-red flex-shrink-0" />
+              <Check size={20} className="text-sporthausen-secondary flex-shrink-0" />
               <span className="text-sm text-gray-600">Conecta con tu comunidad deportiva</span>
             </div>
           </div>

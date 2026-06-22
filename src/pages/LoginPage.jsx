@@ -65,13 +65,13 @@ export const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-sporthausen-neutral-light">
       <Header userType="guest" />
 
       <div className="flex items-center justify-center min-h-[calc(100vh-64px)] py-12 px-4 pt-24">
         <div className="w-full max-w-md">
           {/* Back Button */}
-          <Link to="/" className="inline-flex items-center gap-2 text-sportshausen-red hover:text-red-700 font-semibold mb-8 transition-colors">
+          <Link to="/" className="inline-flex items-center gap-2 text-sporthausen-primary hover:text-sporthausen-secondary font-semibold mb-8 transition-colors">
             <ArrowLeft size={20} />
             Volver
           </Link>
@@ -80,7 +80,7 @@ export const LoginPage = () => {
           <div className="card-shadow bg-white rounded-2xl p-8 md:p-10">
             {/* Header */}
             <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-gradient-to-br from-sportshausen-red to-red-700 rounded-xl flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-gradient-to-br from-sporthausen-primary to-sporthausen-secondary rounded-xl flex items-center justify-center mx-auto mb-4">
                 <LogIn size={32} className="text-white" />
               </div>
               <h1 className="text-3xl font-display font-bold text-sportshausen-dark mb-2">
@@ -103,7 +103,7 @@ export const LoginPage = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="tu@email.com"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 ring-sportshausen-red outline-none transition-all"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 ring-sporthausen-secondary outline-none transition-all"
                 />
               </div>
 
@@ -118,12 +118,12 @@ export const LoginPage = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Tu contraseña"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 ring-sportshausen-red outline-none transition-all"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 ring-sporthausen-secondary outline-none transition-all"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-sportshausen-red transition-colors"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-sporthausen-secondary transition-colors"
                   >
                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
@@ -136,7 +136,7 @@ export const LoginPage = () => {
                   <input type="checkbox" className="w-4 h-4 rounded border-gray-300" />
                   <span className="text-gray-600">Recuérdame</span>
                 </label>
-                <a href="#" className="text-sportshausen-red hover:text-red-700 font-semibold transition-colors">
+                <a href="#" className="text-sporthausen-primary hover:text-sporthausen-secondary font-semibold transition-colors">
                   ¿Olvidaste tu contraseña?
                 </a>
               </div>
@@ -170,7 +170,7 @@ export const LoginPage = () => {
 
             {/* Social Login */}
             <div className="space-y-3">
-              <button className="w-full flex items-center justify-center gap-3 px-4 py-3 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-semibold">
+              <button className="w-full flex items-center justify-center gap-3 px-4 py-3 border-2 border-gray-300 rounded-lg hover:bg-sporthausen-neutral-light transition-colors font-semibold">
                 <span>🔵</span>
                 <span>Ingresar con Google</span>
               </button>
@@ -180,7 +180,7 @@ export const LoginPage = () => {
             <div className="text-center mt-8 pt-8 border-t border-gray-200">
               <p className="text-gray-600">
                 ¿No tienes cuenta?
-                <Link to="/signup" className="ml-2 text-sportshausen-red hover:text-red-700 font-semibold transition-colors">
+                <Link to="/signup" className="ml-2 text-sporthausen-primary hover:text-sporthausen-secondary font-semibold transition-colors">
                   Regístrate aquí
                 </Link>
               </p>

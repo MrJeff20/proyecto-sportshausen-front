@@ -96,7 +96,7 @@ export const BookerDashboard = () => {
                     <label className="block text-sm font-semibold text-sportshausen-dark mb-2">
                       Ciudad
                     </label>
-                    <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 ring-sportshausen-red outline-none">
+                    <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 ring-sporthausen-secondary outline-none">
                       <option>Todas</option>
                       <option>Santiago</option>
                       <option>Valparaíso</option>
@@ -107,7 +107,7 @@ export const BookerDashboard = () => {
                     <label className="block text-sm font-semibold text-sportshausen-dark mb-2">
                       Años de Experiencia
                     </label>
-                    <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 ring-sportshausen-red outline-none">
+                    <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 ring-sporthausen-secondary outline-none">
                       <option>Cualquiera</option>
                       <option>0-2 años</option>
                       <option>3-5 años</option>
@@ -118,7 +118,7 @@ export const BookerDashboard = () => {
                     <label className="block text-sm font-semibold text-sportshausen-dark mb-2">
                       Rango de Peso
                     </label>
-                    <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 ring-sportshausen-red outline-none">
+                    <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 ring-sporthausen-secondary outline-none">
                       <option>Cualquiera</option>
                       <option>70-80 kg</option>
                       <option>80-90 kg</option>
@@ -202,19 +202,19 @@ export const BookerDashboard = () => {
               <div className="card-shadow bg-white p-6 rounded-lg space-y-4 max-w-xl">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1">Nombre</label>
-                  <input defaultValue="User Booker" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 ring-sportshausen-red outline-none" />
+                  <input defaultValue="User Booker" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 ring-sporthausen-secondary outline-none" />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1">Email</label>
-                  <input defaultValue="booker@sportshausen.cl" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 ring-sportshausen-red outline-none" />
+                  <input defaultValue="booker@sportshausen.cl" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 ring-sporthausen-secondary outline-none" />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1">Organización</label>
-                  <input defaultValue="Booking Pro Events" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 ring-sportshausen-red outline-none" />
+                  <input defaultValue="Booking Pro Events" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 ring-sporthausen-secondary outline-none" />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1">Ciudad</label>
-                  <input defaultValue="Santiago" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 ring-sportshausen-red outline-none" />
+                  <input defaultValue="Santiago" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 ring-sporthausen-secondary outline-none" />
                 </div>
                 <button className="btn-primary">Guardar Cambios</button>
               </div>

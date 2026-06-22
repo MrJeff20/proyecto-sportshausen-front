@@ -63,7 +63,7 @@ export const FeedLuchador = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-sporthausen-neutral-light">
       <Header userType="luchador" isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
       <SideNav active={activeTab} onSelect={(id)=>setActiveTab(id)} isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
 
@@ -84,7 +84,7 @@ export const FeedLuchador = () => {
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`w-full text-left px-4 py-3 rounded-lg font-semibold mb-2 ${activeTab === item.id ? 'bg-sportshausen-red text-white' : 'hover:bg-gray-50 text-gray-700'}`}
+                  className={`w-full text-left px-4 py-3 rounded-lg font-semibold mb-2 ${activeTab === item.id ? 'bg-sportshausen-red text-white' : 'hover:bg-sporthausen-neutral-light text-gray-700'}`}
                 >
                   {item.label}
                 </button>
@@ -142,7 +142,7 @@ export const FeedLuchador = () => {
                     <input
                       type="text"
                       placeholder="¿Qué estás pensando?"
-                      className="flex-1 bg-gray-100 rounded-full px-4 py-2 hover:bg-gray-200 transition-colors focus:bg-white focus:ring-2 ring-sportshausen-red outline-none"
+                      className="flex-1 bg-gray-100 rounded-full px-4 py-2 hover:bg-gray-200 transition-colors focus:bg-white focus:ring-2 ring-sporthausen-secondary outline-none"
                     />
                   </div>
                 </div>

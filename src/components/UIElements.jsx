@@ -3,17 +3,17 @@ import { AlertCircle, CheckCircle, Info, X } from 'lucide-react';
 
 export const Toast = ({ type = 'success', message, onClose }) => {
   const bgColors = {
-    success: 'bg-yellow-50 border-sportshausen-yellow',
-    error: 'bg-red-100 border-red-400',
-    warning: 'bg-yellow-100 border-yellow-400',
-    info: 'bg-gray-100 border-gray-400',
+    success: 'bg-teal-50 border-sporthausen-secondary',
+    error: 'bg-red-50 border-sporthausen-accent',
+    warning: 'bg-amber-50 border-amber-400',
+    info: 'bg-slate-50 border-slate-400',
   };
 
   const textColors = {
-    success: 'text-sportshausen-dark',
-    error: 'text-red-800',
-    warning: 'text-yellow-800',
-    info: 'text-gray-800',
+    success: 'text-sporthausen-neutral-dark',
+    error: 'text-sporthausen-accent',
+    warning: 'text-amber-800',
+    info: 'text-sporthausen-neutral-dark',
   };
 
   const icons = {
@@ -42,7 +42,7 @@ export const LoadingSpinner = ({ size = 'md' }) => {
   };
 
   return (
-    <div className={`${sizes[size]} border-4 border-gray-300 border-t-sportshausen-red rounded-full animate-spin`}></div>
+    <div className={`${sizes[size]} border-4 border-slate-200 border-t-sporthausen-secondary rounded-full animate-spin`}></div>
   );
 };
 
@@ -60,7 +60,7 @@ export const EmptyState = ({ icon = '📭', title = 'Sin datos', description = '
   return (
     <div className="flex flex-col items-center justify-center py-12">
       <div className="text-6xl mb-4">{icon}</div>
-      <h3 className="text-xl font-bold text-sportshausen-dark mb-2">{title}</h3>
+      <h3 className="text-xl font-bold text-sporthausen-neutral-dark mb-2">{title}</h3>
       <p className="text-gray-600">{description}</p>
     </div>
   );

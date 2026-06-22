@@ -40,8 +40,8 @@ const SideNav = ({ active, onSelect, isOpen = false, setIsOpen }) => {
       onClick={() => onClick(item.id)}
       className={`w-full text-left px-4 py-3 rounded-lg font-semibold transition-colors ${
         active === item.id
-          ? 'bg-sportshausen-red text-white'
-          : 'text-gray-700 hover:bg-gray-50'
+          ? 'bg-sporthausen-primary text-white shadow-sm'
+          : 'text-sporthausen-neutral-dark hover:bg-sporthausen-neutral-light hover:text-sporthausen-primary'
       }`}
     >
       <span className="mr-2">{item.icon}</span>
@@ -51,8 +51,8 @@ const SideNav = ({ active, onSelect, isOpen = false, setIsOpen }) => {
 
   return (
     <>
-      {/* Desktop sidebar */}
-      <nav className="fixed left-0 top-16 bottom-0 w-64 bg-white border-r border-gray-200 p-4 hidden md:block z-40 overflow-y-auto">
+      {/* Desktop sidebar — fondo Neutral Light (60%) con borde sutil */}
+      <nav className="fixed left-0 top-16 bottom-0 w-64 bg-sporthausen-neutral-light border-r border-slate-200 p-4 hidden md:block z-40 overflow-y-auto">
         <div className="space-y-1">
           {items.map(item => (
             <NavItem key={item.id} item={item} onClick={handleClick} />
@@ -64,10 +64,10 @@ const SideNav = ({ active, onSelect, isOpen = false, setIsOpen }) => {
       {isOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
           <div
-            className="absolute inset-0 bg-black opacity-40"
+            className="absolute inset-0 bg-sporthausen-primary/60 backdrop-blur-sm"
             onClick={() => setIsOpen && setIsOpen(false)}
           />
-          <div className="absolute left-0 top-0 bottom-0 w-64 bg-white p-4 shadow-xl overflow-y-auto">
+          <div className="absolute left-0 top-0 bottom-0 w-64 bg-sporthausen-neutral-light p-4 shadow-xl overflow-y-auto">
             <div className="pt-4 space-y-1">
               {items.map(item => (
                 <button
@@ -78,8 +78,8 @@ const SideNav = ({ active, onSelect, isOpen = false, setIsOpen }) => {
                   }}
                   className={`w-full text-left px-4 py-3 rounded-lg font-semibold transition-colors ${
                     active === item.id
-                      ? 'bg-sportshausen-red text-white'
-                      : 'text-gray-700 hover:bg-gray-50'
+                      ? 'bg-sporthausen-primary text-white shadow-sm'
+                      : 'text-sporthausen-neutral-dark hover:bg-white hover:text-sporthausen-primary'
                   }`}
                 >
                   <span className="mr-2">{item.icon}</span>

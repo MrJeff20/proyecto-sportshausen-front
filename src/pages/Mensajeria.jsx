@@ -147,7 +147,7 @@ const Mensajeria = () => {
                   <button
                     key={conv.id}
                     onClick={() => seleccionarConv(conv)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left border-b border-gray-50 ${activa ? 'bg-red-50 border-l-4 border-l-sportshausen-red' : ''}`}
+                    className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-sporthausen-neutral-light transition-colors text-left border-b border-gray-50 ${activa ? 'bg-red-50 border-l-4 border-l-sportshausen-red' : ''}`}
                   >
                     <div className="w-10 h-10 rounded-full bg-sportshausen-gold flex items-center justify-center text-white font-bold flex-shrink-0">
                       {inicial}
@@ -174,7 +174,7 @@ const Mensajeria = () => {
             <div className="flex-1 flex flex-col bg-white overflow-hidden">
               {/* Header del chat */}
               <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-200 bg-white">
-                <button onClick={() => setConvActiva(null)} className="md:hidden p-1 hover:bg-gray-100 rounded">
+                <button onClick={() => setConvActiva(null)} className="md:hidden p-1 hover:bg-sporthausen-neutral-light rounded">
                   <ArrowLeft size={20} />
                 </button>
                 <div className="w-9 h-9 rounded-full bg-sportshausen-gold flex items-center justify-center text-white font-bold text-sm">
@@ -189,7 +189,7 @@ const Mensajeria = () => {
               </div>
 
               {/* Mensajes */}
-              <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 bg-gray-50">
+              <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 bg-sporthausen-neutral-light">
                 {mensajes.length === 0 && (
                   <p className="text-center text-sm text-gray-400 pt-8">Inicia la conversación</p>
                 )}
@@ -232,7 +232,7 @@ const Mensajeria = () => {
               </div>
             </div>
           ) : (
-            <div className="flex-1 hidden md:flex items-center justify-center bg-gray-50 flex-col gap-3">
+            <div className="flex-1 hidden md:flex items-center justify-center bg-sporthausen-neutral-light flex-col gap-3">
               <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
                 <Send size={28} className="text-gray-400" />
               </div>
