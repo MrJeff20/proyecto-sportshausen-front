@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import {
   ChevronLeft, ChevronRight, Calendar, Clock,
-  Users, Trash2, Edit3, X, CheckCircle2, Plus, Check,
+  Users, Trash2, Edit3, X, CheckCircle2, Plus, Check, AlertCircle,
 } from 'lucide-react';
 import Header from '../components/Header';
 import SideNav from '../components/SideNav';
 import Footer from '../components/Footer';
+import {
+  getEventos,
+  crearEvento,
+  actualizarEvento,
+  eliminarEvento,
+} from '../services/eventosService';
 
 // ─────────────────────────────────────────
 //  Constantes
@@ -15,7 +21,6 @@ const MONTH_NAMES = [
   'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre',
 ];
 const DAY_NAMES = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
-const STORAGE_KEY = 'agrupacion_eventos';
 
 // Horas disponibles: 08:00 — 22:00
 const ALL_HOURS = Array.from({ length: 15 }, (_, i) => {
@@ -26,7 +31,7 @@ const ALL_HOURS = Array.from({ length: 15 }, (_, i) => {
 // Filtra horas según duración para que el evento termine antes de las 23:00
 const getHorasDisponibles = (duracion) => {
   if (!duracion) return ALL_HOURS;
-  return ALL_HOURS.filter(h => parseInt(h) + duracion <= 23);
+  return ALL_HOURS.filter((h) => parseInt(h) + duracion <= 23);
 };
 
 const calcHoraFin = (horaInicio, duracion) => {
@@ -35,15 +40,6 @@ const calcHoraFin = (horaInicio, duracion) => {
   if (fin > 23) return '';
   return `${String(fin).padStart(2, '0')}:00`;
 };
-
-// ─────────────────────────────────────────
-//  Persistencia localStorage
-// ─────────────────────────────────────────
-const loadEventos = () => {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
-  catch { return []; }
-};
-const saveEventos = (ev) => localStorage.setItem(STORAGE_KEY, JSON.stringify(ev));
 
 // ─────────────────────────────────────────
 //  Sub-componentes reutilizables
@@ -100,13 +96,12 @@ function ResumenRow({ label, value }) {
 // ─────────────────────────────────────────
 //  Formulario de evento (crear / editar)
 // ─────────────────────────────────────────
-function EventoForm({ form, onChange }) {
+function EventoForm({ form, onChange, disabled }) {
   const horaFin = calcHoraFin(form.horaInicio, form.duracion);
   const horas   = getHorasDisponibles(form.duracion);
 
   const setPill = (key, val) => {
     const updated = { ...form, [key]: val };
-    // Si la hora elegida queda fuera del rango permitido para la nueva duración, la reseteamos
     if (key === 'duracion' && form.horaInicio) {
       if (parseInt(form.horaInicio) + val > 23) updated.horaInicio = '';
     }
@@ -114,7 +109,7 @@ function EventoForm({ form, onChange }) {
   };
 
   return (
-    <div className="space-y-5">
+    <fieldset disabled={disabled} className="space-y-5">
 
       {/* Nombre del evento */}
       <div>
@@ -128,7 +123,7 @@ function EventoForm({ form, onChange }) {
           placeholder="Ej: FNL Doomsday, Cerveza y Oro..."
           className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm outline-none
             focus:ring-2 focus:ring-sportshausen-gold/40 focus:border-sportshausen-gold
-            transition-colors placeholder:text-gray-300"
+            transition-colors placeholder:text-gray-300 disabled:opacity-50"
         />
       </div>
 
@@ -166,7 +161,7 @@ function EventoForm({ form, onChange }) {
             onChange={(e) => onChange({ ...form, horaInicio: e.target.value })}
             className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm outline-none
               focus:ring-2 focus:ring-sportshausen-gold/40 focus:border-sportshausen-gold
-              transition-colors appearance-none bg-white cursor-pointer"
+              transition-colors appearance-none bg-white cursor-pointer disabled:opacity-50"
           >
             <option value="">Selecciona la hora de inicio</option>
             {horas.map((h) => (
@@ -179,7 +174,6 @@ function EventoForm({ form, onChange }) {
           />
         </div>
 
-        {/* Hora de término calculada */}
         {horaFin && (
           <div className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-sportshausen-gold">
             <Check size={13} />
@@ -218,7 +212,7 @@ function EventoForm({ form, onChange }) {
           ))}
         </div>
       </div>
-    </div>
+    </fieldset>
   );
 }
 
@@ -239,19 +233,30 @@ export default function AgendaAgrupacion() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [month, setMonth] = useState(today.getMonth());
   const [year,  setYear]  = useState(today.getFullYear());
-  const [eventos, setEventos] = useState(loadEventos);
 
-  // Modals
-  const [modalCrear,   setModalCrear]   = useState(null); // { date, month, year }
-  const [modalExito,   setModalExito]   = useState(null); // evento recién creado
-  const [modalDetalle, setModalDetalle] = useState(null); // evento existente
-  const [modalEditar,  setModalEditar]  = useState(null); // evento a editar
+  // ── Datos y estados de carga ──
+  const [eventos,   setEventos]   = useState([]);
+  const [cargando,  setCargando]  = useState(true);
+  const [guardando, setGuardando] = useState(false);
+  const [errorApi,  setErrorApi]  = useState('');
 
-  // Formularios
+  // ── Modales ──
+  const [modalCrear,   setModalCrear]   = useState(null);
+  const [modalExito,   setModalExito]   = useState(null);
+  const [modalDetalle, setModalDetalle] = useState(null);
+  const [modalEditar,  setModalEditar]  = useState(null);
+
+  // ── Formularios ──
   const [form,     setForm]     = useState(FORM_EMPTY);
   const [editForm, setEditForm] = useState(FORM_EMPTY);
 
-  useEffect(() => { saveEventos(eventos); }, [eventos]);
+  // ── Carga inicial desde Xano ──
+  useEffect(() => {
+    getEventos()
+      .then(setEventos)
+      .catch(() => setErrorApi('No se pudieron cargar los eventos. Verifica tu conexión.'))
+      .finally(() => setCargando(false));
+  }, []);
 
   // ── Navegación de mes ──
   const prevMonth = () => {
@@ -289,31 +294,48 @@ export default function AgendaAgrupacion() {
     }
   };
 
-  // ── Crear evento ──
-  const handleCrear = () => {
+  // ── Crear evento → Xano POST ──
+  const handleCrear = async () => {
     if (!isFormValido(form)) return;
-    const nuevo = {
-      id:         Date.now(),
-      nombre:     form.nombre.trim(),
-      duracion:   form.duracion,
-      horaInicio: form.horaInicio,
-      horaFin:    calcHoraFin(form.horaInicio, form.duracion),
-      luchadores: form.luchadores,
-      fecha:      { ...modalCrear },
-    };
-    setEventos((prev) => [...prev, nuevo]);
-    setModalCrear(null);
-    setForm(FORM_EMPTY);
-    setModalExito(nuevo);
+    setGuardando(true);
+    setErrorApi('');
+    try {
+      const payload = {
+        nombre:     form.nombre.trim(),
+        duracion:   form.duracion,
+        horaInicio: form.horaInicio,
+        horaFin:    calcHoraFin(form.horaInicio, form.duracion),
+        luchadores: form.luchadores,
+        fecha:      { ...modalCrear },
+      };
+      const creado = await crearEvento(payload);
+      setEventos((prev) => [...prev, creado]);
+      setModalCrear(null);
+      setForm(FORM_EMPTY);
+      setModalExito(creado);
+    } catch {
+      setErrorApi('No se pudo crear el evento. Intenta de nuevo.');
+    } finally {
+      setGuardando(false);
+    }
   };
 
-  // ── Eliminar evento ──
-  const handleEliminar = (id) => {
-    setEventos((prev) => prev.filter((e) => e.id !== id));
-    setModalDetalle(null);
+  // ── Eliminar evento → Xano DELETE ──
+  const handleEliminar = async (id) => {
+    setGuardando(true);
+    setErrorApi('');
+    try {
+      await eliminarEvento(id);
+      setEventos((prev) => prev.filter((e) => e.id !== id));
+      setModalDetalle(null);
+    } catch {
+      setErrorApi('No se pudo eliminar el evento. Intenta de nuevo.');
+    } finally {
+      setGuardando(false);
+    }
   };
 
-  // ── Editar evento ──
+  // ── Editar evento → Xano PUT ──
   const openEditar = (evento) => {
     setEditForm({
       nombre:     evento.nombre,
@@ -325,23 +347,29 @@ export default function AgendaAgrupacion() {
     setModalEditar(evento);
   };
 
-  const handleGuardarEdicion = () => {
+  const handleGuardarEdicion = async () => {
     if (!isFormValido(editForm)) return;
-    setEventos((prev) =>
-      prev.map((e) =>
-        e.id === modalEditar.id
-          ? {
-              ...e,
-              nombre:     editForm.nombre.trim(),
-              duracion:   editForm.duracion,
-              horaInicio: editForm.horaInicio,
-              horaFin:    calcHoraFin(editForm.horaInicio, editForm.duracion),
-              luchadores: editForm.luchadores,
-            }
-          : e
-      )
-    );
-    setModalEditar(null);
+    setGuardando(true);
+    setErrorApi('');
+    try {
+      const payload = {
+        nombre:     editForm.nombre.trim(),
+        duracion:   editForm.duracion,
+        horaInicio: editForm.horaInicio,
+        horaFin:    calcHoraFin(editForm.horaInicio, editForm.duracion),
+        luchadores: editForm.luchadores,
+        fecha:      modalEditar.fecha,
+      };
+      const actualizado = await actualizarEvento(modalEditar.id, payload);
+      setEventos((prev) =>
+        prev.map((e) => (e.id === modalEditar.id ? actualizado : e))
+      );
+      setModalEditar(null);
+    } catch {
+      setErrorApi('No se pudo actualizar el evento. Intenta de nuevo.');
+    } finally {
+      setGuardando(false);
+    }
   };
 
   // ── Datos del sidebar ──
@@ -380,13 +408,30 @@ export default function AgendaAgrupacion() {
       <div className="flex flex-col pt-16 md:ml-64">
         <div className="max-w-5xl mx-auto w-full px-4 py-8">
 
-          {/* Encabezado de página */}
+          {/* Encabezado */}
           <div className="mb-6">
             <h1 className="text-3xl font-bold text-sportshausen-dark">Agenda de Eventos</h1>
             <p className="text-gray-500 mt-1">
               Gestiona los eventos de tu agrupación. Haz clic en un día para crear o revisar eventos.
             </p>
           </div>
+
+          {/* Banner de error API */}
+          {errorApi && (
+            <div className="mb-4 px-4 py-3 bg-sportshausen-red/10 border border-sportshausen-red/30
+              rounded-xl flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <AlertCircle size={16} className="text-sportshausen-red flex-shrink-0" />
+                <p className="text-sm text-sportshausen-red font-medium">{errorApi}</p>
+              </div>
+              <button
+                onClick={() => setErrorApi('')}
+                className="text-sportshausen-red/50 hover:text-sportshausen-red transition-colors"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
@@ -424,42 +469,50 @@ export default function AgendaAgrupacion() {
                 ))}
               </div>
 
-              {/* Días */}
-              <div className="grid grid-cols-7 gap-1">
-                {calDays.map((date, idx) => {
-                  if (!date) return <div key={idx} />;
-                  const evento = getEvento(date, month, year);
-                  const past   = isPast(date, month, year);
-                  const tod    = isToday(date, month, year);
+              {/* Días — skeleton mientras carga */}
+              {cargando ? (
+                <div className="grid grid-cols-7 gap-1">
+                  {Array.from({ length: 35 }, (_, i) => (
+                    <div
+                      key={i}
+                      className="h-12 rounded-xl bg-gray-100 animate-pulse"
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-7 gap-1">
+                  {calDays.map((date, idx) => {
+                    if (!date) return <div key={idx} />;
+                    const evento = getEvento(date, month, year);
+                    const past   = isPast(date, month, year);
+                    const tod    = isToday(date, month, year);
 
-                  return (
-                    <button
-                      key={idx}
-                      disabled={past}
-                      onClick={() => handleDayClick(date)}
-                      title={evento ? evento.nombre : 'Agregar evento'}
-                      className={`relative h-12 rounded-xl text-sm font-semibold transition-all focus:outline-none ${
-                        past
-                          ? 'bg-gray-100 text-gray-300 cursor-not-allowed'
-                          : evento
-                          ? 'bg-sportshausen-gold text-white shadow-sm hover:opacity-90 active:scale-95'
-                          : 'cal-disponible hover:shadow-md active:scale-95'
-                      } ${tod && !evento && !past ? 'ring-2 ring-sportshausen-dark' : ''}`}
-                    >
-                      {date}
-
-                      {/* Punto indicador para días con evento */}
-                      {evento && !past && (
-                        <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-white/60" />
-                      )}
-                      {/* Punto de hoy sin evento */}
-                      {tod && !evento && !past && (
-                        <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-sportshausen-red" />
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
+                    return (
+                      <button
+                        key={idx}
+                        disabled={past || guardando}
+                        onClick={() => handleDayClick(date)}
+                        title={evento ? evento.nombre : 'Agregar evento'}
+                        className={`relative h-12 rounded-xl text-sm font-semibold transition-all focus:outline-none ${
+                          past
+                            ? 'bg-gray-100 text-gray-300 cursor-not-allowed'
+                            : evento
+                            ? 'bg-sportshausen-gold text-white shadow-sm hover:opacity-90 active:scale-95'
+                            : 'cal-disponible hover:shadow-md active:scale-95'
+                        } ${tod && !evento && !past ? 'ring-2 ring-sportshausen-dark' : ''}`}
+                      >
+                        {date}
+                        {evento && !past && (
+                          <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-white/60" />
+                        )}
+                        {tod && !evento && !past && (
+                          <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-sportshausen-red" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
 
               {/* Leyenda */}
               <div className="flex flex-wrap gap-5 mt-6 pt-4 border-t border-gray-100">
@@ -480,7 +533,7 @@ export default function AgendaAgrupacion() {
                 </div>
                 <div className="flex items-center gap-2">
                   <div
-                    className="w-5 h-5 rounded-lg cal-disponible ring-2 ring-sportshausen-dark"
+                    className="w-5 h-5 rounded-lg ring-2 ring-sportshausen-dark"
                     style={{ background: '#FFF3C0', border: '1.5px solid #FFD100' }}
                   />
                   <span className="text-xs text-gray-600">Hoy</span>
@@ -500,14 +553,14 @@ export default function AgendaAgrupacion() {
                 <div className="flex justify-between items-center mb-1">
                   <span className="text-sm text-gray-600">Eventos programados</span>
                   <span className="font-bold text-sportshausen-dark text-lg">
-                    {eventosEsteMes.length}
+                    {cargando ? '—' : eventosEsteMes.length}
                   </span>
                 </div>
                 <div className="w-full bg-gray-100 rounded-full h-2">
                   <div
                     className="h-2 rounded-full bg-sportshausen-gold transition-all"
                     style={{
-                      width: `${Math.min(
+                      width: cargando ? '0%' : `${Math.min(
                         (eventosEsteMes.length / Math.max(daysInMonth, 1)) * 100,
                         100
                       )}%`,
@@ -523,7 +576,13 @@ export default function AgendaAgrupacion() {
                   Próximos eventos
                 </h3>
 
-                {upcomingEventos.length === 0 ? (
+                {cargando ? (
+                  <div className="space-y-2">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="h-12 bg-gray-100 rounded-lg animate-pulse" />
+                    ))}
+                  </div>
+                ) : upcomingEventos.length === 0 ? (
                   <p className="text-sm text-gray-400 text-center py-4">
                     No hay eventos en los próximos 90 días
                   </p>
@@ -549,14 +608,16 @@ export default function AgendaAgrupacion() {
                         <div className="flex gap-1 flex-shrink-0 mt-0.5">
                           <button
                             onClick={() => openEditar(ev)}
-                            className="p-1 text-gray-300 hover:text-sportshausen-gold transition-colors rounded"
+                            disabled={guardando}
+                            className="p-1 text-gray-300 hover:text-sportshausen-gold transition-colors rounded disabled:opacity-40"
                             title="Editar"
                           >
                             <Edit3 size={14} />
                           </button>
                           <button
                             onClick={() => handleEliminar(ev.id)}
-                            className="p-1 text-gray-300 hover:text-sportshausen-red transition-colors rounded"
+                            disabled={guardando}
+                            className="p-1 text-gray-300 hover:text-sportshausen-red transition-colors rounded disabled:opacity-40"
                             title="Eliminar"
                           >
                             <Trash2 size={14} />
@@ -572,8 +633,8 @@ export default function AgendaAgrupacion() {
               <div className="bg-sportshausen-gold/10 border border-sportshausen-gold/30 rounded-2xl p-4">
                 <p className="text-xs text-gray-700">
                   <strong>Consejo:</strong> Haz clic en cualquier día futuro para crear un evento.
-                  Los días ocupados aparecen en teal. Puedes editar o eliminar desde la lista de
-                  próximos eventos.
+                  Los días ocupados aparecen en teal. Puedes editar o eliminar desde la lista
+                  de próximos eventos.
                 </p>
               </div>
             </div>
@@ -587,36 +648,49 @@ export default function AgendaAgrupacion() {
           MODAL 1 — CREAR EVENTO
       ═══════════════════════════════════════════════════════════ */}
       {modalCrear && (
-        <Overlay onClose={() => setModalCrear(null)}>
+        <Overlay onClose={() => !guardando && setModalCrear(null)}>
           <ModalHeader
             title={`${modalCrear.date} de ${MONTH_NAMES[modalCrear.month]}`}
-            onClose={() => setModalCrear(null)}
+            onClose={() => !guardando && setModalCrear(null)}
           />
 
           <div className="px-6 py-5">
-            <EventoForm form={form} onChange={setForm} />
+            <EventoForm form={form} onChange={setForm} disabled={guardando} />
           </div>
 
           <ModalFooter>
             <button
               type="button"
               onClick={() => setForm(FORM_EMPTY)}
-              className="btn-outline text-sm py-2 px-4"
+              disabled={guardando}
+              className="btn-outline text-sm py-2 px-4 disabled:opacity-40"
             >
               Borrar todo
             </button>
             <button
               type="button"
               onClick={handleCrear}
-              disabled={!isFormValido(form)}
+              disabled={!isFormValido(form) || guardando}
               className={`btn-primary text-sm py-2 px-5 flex items-center gap-2 transition-all ${
-                !isFormValido(form)
+                !isFormValido(form) || guardando
                   ? 'opacity-40 cursor-not-allowed !transform-none !shadow-none'
                   : ''
               }`}
             >
-              <Plus size={15} />
-              Crear evento
+              {guardando ? (
+                <>
+                  <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                  </svg>
+                  Guardando...
+                </>
+              ) : (
+                <>
+                  <Plus size={15} />
+                  Crear evento
+                </>
+              )}
             </button>
           </ModalFooter>
         </Overlay>
@@ -628,7 +702,6 @@ export default function AgendaAgrupacion() {
       {modalExito && (
         <Overlay onClose={() => setModalExito(null)}>
           <div className="px-8 py-8 text-center">
-            {/* Ícono de éxito */}
             <div className="w-20 h-20 rounded-full bg-sportshausen-gold/15 flex items-center justify-center mx-auto mb-5">
               <CheckCircle2 size={46} className="text-sportshausen-gold" />
             </div>
@@ -640,10 +713,9 @@ export default function AgendaAgrupacion() {
               Creaste tu evento exitosamente.
             </p>
 
-            {/* Resumen del evento */}
             <div className="bg-sporthausen-neutral-light rounded-xl px-4 py-3 text-left mb-6">
-              <ResumenRow label="Nombre"       value={modalExito.nombre} />
-              <ResumenRow label="Fecha"        value={formatFecha(modalExito.fecha)} />
+              <ResumenRow label="Nombre"     value={modalExito.nombre} />
+              <ResumenRow label="Fecha"      value={formatFecha(modalExito.fecha)} />
               <ResumenRow
                 label="Horario"
                 value={`${modalExito.horaInicio} – ${modalExito.horaFin} (${modalExito.duracion} hrs)`}
@@ -665,13 +737,13 @@ export default function AgendaAgrupacion() {
       )}
 
       {/* ═══════════════════════════════════════════════════════════
-          MODAL 3 — DETALLE EVENTO (ver / editar / eliminar)
+          MODAL 3 — DETALLE EVENTO
       ═══════════════════════════════════════════════════════════ */}
       {modalDetalle && (
-        <Overlay onClose={() => setModalDetalle(null)}>
+        <Overlay onClose={() => !guardando && setModalDetalle(null)}>
           <ModalHeader
             title={modalDetalle.nombre}
-            onClose={() => setModalDetalle(null)}
+            onClose={() => !guardando && setModalDetalle(null)}
           />
 
           <div className="px-6 py-5">
@@ -689,27 +761,35 @@ export default function AgendaAgrupacion() {
           </div>
 
           <ModalFooter>
-            {/* Eliminar a la izquierda */}
             <button
               onClick={() => handleEliminar(modalDetalle.id)}
+              disabled={guardando}
               className="flex items-center gap-1.5 text-sm text-sportshausen-red font-semibold
-                hover:underline transition-colors"
+                hover:underline transition-colors disabled:opacity-40"
             >
-              <Trash2 size={14} />
+              {guardando ? (
+                <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                </svg>
+              ) : (
+                <Trash2 size={14} />
+              )}
               Eliminar
             </button>
 
-            {/* Cerrar + Editar a la derecha */}
             <div className="flex gap-2">
               <button
                 onClick={() => setModalDetalle(null)}
-                className="btn-outline text-sm py-2 px-4"
+                disabled={guardando}
+                className="btn-outline text-sm py-2 px-4 disabled:opacity-40"
               >
                 Cerrar
               </button>
               <button
                 onClick={() => openEditar(modalDetalle)}
-                className="btn-teal text-sm py-2 px-4 flex items-center gap-1.5"
+                disabled={guardando}
+                className="btn-teal text-sm py-2 px-4 flex items-center gap-1.5 disabled:opacity-40"
               >
                 <Edit3 size={14} />
                 Editar
@@ -723,34 +803,47 @@ export default function AgendaAgrupacion() {
           MODAL 4 — EDITAR EVENTO
       ═══════════════════════════════════════════════════════════ */}
       {modalEditar && (
-        <Overlay onClose={() => setModalEditar(null)}>
+        <Overlay onClose={() => !guardando && setModalEditar(null)}>
           <ModalHeader
             title="Editar evento"
-            onClose={() => setModalEditar(null)}
+            onClose={() => !guardando && setModalEditar(null)}
           />
 
           <div className="px-6 py-5">
-            <EventoForm form={editForm} onChange={setEditForm} />
+            <EventoForm form={editForm} onChange={setEditForm} disabled={guardando} />
           </div>
 
           <ModalFooter>
             <button
               onClick={() => setModalEditar(null)}
-              className="btn-outline text-sm py-2 px-4"
+              disabled={guardando}
+              className="btn-outline text-sm py-2 px-4 disabled:opacity-40"
             >
               Cancelar
             </button>
             <button
               onClick={handleGuardarEdicion}
-              disabled={!isFormValido(editForm)}
+              disabled={!isFormValido(editForm) || guardando}
               className={`btn-primary text-sm py-2 px-5 flex items-center gap-2 ${
-                !isFormValido(editForm)
+                !isFormValido(editForm) || guardando
                   ? 'opacity-40 cursor-not-allowed !transform-none !shadow-none'
                   : ''
               }`}
             >
-              <Check size={15} />
-              Guardar cambios
+              {guardando ? (
+                <>
+                  <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                  </svg>
+                  Guardando...
+                </>
+              ) : (
+                <>
+                  <Check size={15} />
+                  Guardar cambios
+                </>
+              )}
             </button>
           </ModalFooter>
         </Overlay>
