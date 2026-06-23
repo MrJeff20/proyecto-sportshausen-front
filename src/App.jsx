@@ -12,6 +12,7 @@ import Ofertas from './pages/Ofertas';
 import Notificaciones from './pages/Notificaciones';
 import PerfilLuchador from './pages/PerfilLuchador';
 import { CalendarioDisponibilidad } from './pages/CalendarioDisponibilidad';
+import AgendaAgrupacion from './pages/AgendaAgrupacion';
 import Mensajeria from './pages/Mensajeria';
 import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -91,6 +92,16 @@ function App() {
           element={
             <ProtectedRoute>
               <CalendarioDisponibilidad />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Agenda de Agrupación - Protegida */}
+        <Route
+          path="/agenda/agrupacion"
+          element={
+            <ProtectedRoute requiredRole="agrupacion">
+              <AgendaAgrupacion />
             </ProtectedRoute>
           }
         />

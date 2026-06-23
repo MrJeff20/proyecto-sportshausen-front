@@ -23,9 +23,9 @@ const AgrupacionDashboard = () => {
               <h1 className="text-4xl font-bold text-sportshausen-dark mb-4">Bienvenido, {currentUser.displayName}!</h1>
               
               <div className="flex gap-4 mb-8">
-                <button onClick={() => navigate('/calendario-disponibilidad')} className="flex items-center gap-2 px-6 py-3 bg-sportshausen-red hover:bg-red-700 text-white font-semibold rounded-lg transition-colors">
+                <button onClick={() => navigate('/agenda/agrupacion')} className="flex items-center gap-2 px-6 py-3 bg-sportshausen-red hover:bg-red-700 text-white font-semibold rounded-lg transition-colors">
                   <Calendar size={20} />
-                  Calendario
+                  Agenda de Eventos
                 </button>
               </div>
 
@@ -129,24 +129,30 @@ const AgrupacionDashboard = () => {
 
           {activeTab === 'calendar' && (
             <div>
-              <h1 className="text-3xl font-bold text-sportshausen-dark mb-6">Calendario de Eventos</h1>
-              <div className="space-y-4">
-                {[
-                  { fecha: '23 Mayo', evento: 'FNL Doomsday', lugar: 'Santiago', luchadores: 8 },
-                  { fecha: '6 Junio', evento: 'Cerveza y Oro', lugar: 'Santiago', luchadores: 6 },
-                  { fecha: '18 Julio', evento: 'Rivals', lugar: 'Santiago', luchadores: 10 },
-                ].map((ev, i) => (
-                  <div key={i} className="card-shadow bg-white p-5 rounded-lg flex items-center justify-between">
-                    <div className="flex gap-4 items-center">
-                      <Calendar className="text-sportshausen-red" size={20} />
-                      <div>
-                        <p className="font-bold text-sportshausen-dark">{ev.evento}</p>
-                        <p className="text-sm text-gray-500">{ev.fecha} · {ev.lugar}</p>
-                      </div>
-                    </div>
-                    <span className="text-sm text-gray-600">{ev.luchadores} luchadores</span>
-                  </div>
-                ))}
+              <h1 className="text-3xl font-bold text-sportshausen-dark mb-2">Agenda de Eventos</h1>
+              <p className="text-gray-500 mb-6">
+                Administra el calendario de eventos de tu agrupación.
+              </p>
+              <div className="card-shadow bg-white p-8 rounded-2xl flex flex-col items-center text-center gap-5">
+                <div className="w-16 h-16 rounded-full bg-sportshausen-gold/15 flex items-center justify-center">
+                  <Calendar size={32} className="text-sportshausen-gold" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-sportshausen-dark mb-1">
+                    Calendario interactivo
+                  </h2>
+                  <p className="text-gray-500 text-sm max-w-sm">
+                    Crea, edita y elimina eventos directamente desde el calendario.
+                    Cada día con evento queda marcado para que tu equipo lo vea de inmediato.
+                  </p>
+                </div>
+                <button
+                  onClick={() => navigate('/agenda/agrupacion')}
+                  className="btn-primary flex items-center gap-2"
+                >
+                  <Calendar size={18} />
+                  Ir a la Agenda
+                </button>
               </div>
             </div>
           )}
