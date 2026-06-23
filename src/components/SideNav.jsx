@@ -6,7 +6,7 @@ const SideNav = ({ active, onSelect, isOpen = false, setIsOpen }) => {
   if (!authed) return null;
   const navigate = useNavigate();
   const userType = typeof window !== 'undefined' ? localStorage.getItem('userType') : null;
-  const items = [
+  const baseItems = [
     { id: 'home', label: 'Inicio', icon: '🏠' },
     { id: 'profile', label: 'Mi perfil', icon: '👤' },
     { id: 'calendar', label: 'Calendario', icon: '📅' },
@@ -16,17 +16,27 @@ const SideNav = ({ active, onSelect, isOpen = false, setIsOpen }) => {
     { id: 'notifications', label: 'Notificaciones', icon: '🔔' },
   ];
 
+  const ticketItems = userType === 'luchador'
+    ? [{ id: 'tickets', label: 'Mis Tickets', icon: '🎫' }]
+    : userType === 'agrupacion'
+    ? [{ id: 'tickets-agrupacion', label: 'Gestionar Tickets', icon: '🎫' }]
+    : [];
+
+  const items = [...baseItems, ...ticketItems];
+
   const handleClick = (id) => {
     const routes = {
-      home:          userType === 'luchador' ? '/panel/luchador'
-                   : userType === 'booker'   ? '/dashboard/booker'
-                   : '/dashboard/agrupacion',
-      profile:       `/perfil/${localStorage.getItem('userId') || '1'}`,
-      calendar:      '/calendario-disponibilidad',
-      events:        '/mis-eventos',
-      offers:        '/ofertas',
-      messages:      '/mensajeria',
-      notifications: '/notificaciones',
+      home:                 userType === 'luchador' ? '/panel/luchador'
+                          : userType === 'booker'   ? '/dashboard/booker'
+                          : '/dashboard/agrupacion',
+      profile:              `/perfil/${localStorage.getItem('userId') || '1'}`,
+      calendar:             '/calendario-disponibilidad',
+      events:               '/mis-eventos',
+      offers:               '/ofertas',
+      messages:             '/mensajeria',
+      notifications:        '/notificaciones',
+      tickets:              '/mis-tickets',
+      'tickets-agrupacion': '/tickets/agrupacion',
     };
     if (routes[id]) {
       navigate(routes[id]);

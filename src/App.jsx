@@ -14,6 +14,8 @@ import PerfilLuchador from './pages/PerfilLuchador';
 import { CalendarioDisponibilidad } from './pages/CalendarioDisponibilidad';
 import AgendaAgrupacion from './pages/AgendaAgrupacion';
 import Mensajeria from './pages/Mensajeria';
+import MisTicketsLuchador from './pages/MisTicketsLuchador';
+import GestionarTicketsAgrupacion from './pages/GestionarTicketsAgrupacion';
 import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/ProtectedRoute';
 import PublicRoute from './components/PublicRoute';
@@ -117,6 +119,26 @@ function App() {
           element={
             <ProtectedRoute>
               <Mensajeria />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Tickets - Luchador */}
+        <Route
+          path="/mis-tickets"
+          element={
+            <ProtectedRoute requiredRole="luchador">
+              <MisTicketsLuchador />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Tickets - Agrupación */}
+        <Route
+          path="/tickets/agrupacion"
+          element={
+            <ProtectedRoute requiredRole="agrupacion">
+              <GestionarTicketsAgrupacion />
             </ProtectedRoute>
           }
         />
