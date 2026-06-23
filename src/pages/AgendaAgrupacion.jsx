@@ -313,8 +313,9 @@ export default function AgendaAgrupacion() {
       setModalCrear(null);
       setForm(FORM_EMPTY);
       setModalExito(creado);
-    } catch {
-      setErrorApi('No se pudo crear el evento. Intenta de nuevo.');
+    } catch (err) {
+      console.error('[handleCrear]', err);
+      setErrorApi(`Error al crear: ${err.message}`);
     } finally {
       setGuardando(false);
     }
@@ -328,8 +329,9 @@ export default function AgendaAgrupacion() {
       await eliminarEvento(id);
       setEventos((prev) => prev.filter((e) => e.id !== id));
       setModalDetalle(null);
-    } catch {
-      setErrorApi('No se pudo eliminar el evento. Intenta de nuevo.');
+    } catch (err) {
+      console.error('[handleEliminar]', err);
+      setErrorApi(`Error al eliminar: ${err.message}`);
     } finally {
       setGuardando(false);
     }
@@ -365,8 +367,9 @@ export default function AgendaAgrupacion() {
         prev.map((e) => (e.id === modalEditar.id ? actualizado : e))
       );
       setModalEditar(null);
-    } catch {
-      setErrorApi('No se pudo actualizar el evento. Intenta de nuevo.');
+    } catch (err) {
+      console.error('[handleGuardarEdicion]', err);
+      setErrorApi(`Error al actualizar: ${err.message}`);
     } finally {
       setGuardando(false);
     }

@@ -42,7 +42,9 @@ const http = async (path, options = {}) => {
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new Error(body.message || `HTTP ${res.status}`);
+    const msg  = body.message || body.error || JSON.stringify(body) || `HTTP ${res.status}`;
+    console.error(`[Xano ${options.method || 'GET'} ${path}]`, res.status, body);
+    throw new Error(msg);
   }
   const text = await res.text();
   return text ? JSON.parse(text) : null;
@@ -55,11 +57,14 @@ export const getEventos = () =>
   http('/eventos').then((data) => (Array.isArray(data) ? data.map(fromXano) : []));
 
 // POST /eventos — crea un evento nuevo
-export const crearEvento = (ev) =>
-  http('/eventos', {
+export const crearEvento = (ev) => {
+  const payload = toXano(ev);
+  console.log('[Xano POST /eventos] payload →', payload);
+  return http('/eventos', {
     method: 'POST',
-    body: JSON.stringify(toXano(ev)),
+    body: JSON.stringify(payload),
   }).then(fromXano);
+};
 
 // PUT /eventos/{id} — actualiza un evento existente
 export const actualizarEvento = (id, ev) =>
