@@ -10,7 +10,6 @@ import Modal from '../components/Modal';
 import Header from '../components/Header';
 import SideNav from '../components/SideNav';
 import Footer from '../components/Footer';
-import { toast } from 'react-toastify';
 import { ChevronLeft, ChevronRight, X, AlertCircle } from 'lucide-react';
 
 const ESTADO_BADGE = { ABIERTO: 'pendiente', EN_PROCESO: 'confirmada', CERRADO: 'completada' };
