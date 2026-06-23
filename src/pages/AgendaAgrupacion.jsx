@@ -299,20 +299,20 @@ export default function AgendaAgrupacion() {
     if (!isFormValido(form)) return;
     setGuardando(true);
     setErrorApi('');
+    const payload = {
+      nombre:     form.nombre.trim(),
+      duracion:   form.duracion,
+      horaInicio: form.horaInicio,
+      horaFin:    calcHoraFin(form.horaInicio, form.duracion),
+      luchadores: form.luchadores,
+      fecha:      { ...modalCrear },
+    };
     try {
-      const payload = {
-        nombre:     form.nombre.trim(),
-        duracion:   form.duracion,
-        horaInicio: form.horaInicio,
-        horaFin:    calcHoraFin(form.horaInicio, form.duracion),
-        luchadores: form.luchadores,
-        fecha:      { ...modalCrear },
-      };
-      const creado = await crearEvento(payload);
-      setEventos((prev) => [...prev, creado]);
+      const listaActualizada = await crearEvento(payload);
+      setEventos(listaActualizada);
       setModalCrear(null);
       setForm(FORM_EMPTY);
-      setModalExito(creado);
+      setModalExito(payload);
     } catch (err) {
       console.error('[handleCrear]', err);
       setErrorApi(`Error al crear: ${err.message}`);
@@ -362,10 +362,8 @@ export default function AgendaAgrupacion() {
         luchadores: editForm.luchadores,
         fecha:      modalEditar.fecha,
       };
-      const actualizado = await actualizarEvento(modalEditar.id, payload);
-      setEventos((prev) =>
-        prev.map((e) => (e.id === modalEditar.id ? actualizado : e))
-      );
+      const listaActualizada = await actualizarEvento(modalEditar.id, payload);
+      setEventos(listaActualizada);
       setModalEditar(null);
     } catch (err) {
       console.error('[handleGuardarEdicion]', err);

@@ -57,21 +57,25 @@ export const getEventos = () =>
   http('/eventos').then((data) => (Array.isArray(data) ? data.map(fromXano) : []));
 
 // POST /eventos — crea un evento nuevo
-export const crearEvento = (ev) => {
+// Xano devuelve body vacío en create/update, así que se refresca la lista completa
+export const crearEvento = async (ev) => {
   const payload = toXano(ev);
   console.log('[Xano POST /eventos] payload →', payload);
-  return http('/eventos', {
+  await http('/eventos', {
     method: 'POST',
     body: JSON.stringify(payload),
-  }).then(fromXano);
+  });
+  return getEventos();
 };
 
 // PUT /eventos/{id} — actualiza un evento existente
-export const actualizarEvento = (id, ev) =>
-  http(`/eventos/${id}`, {
+export const actualizarEvento = async (id, ev) => {
+  await http(`/eventos/${id}`, {
     method: 'PUT',
     body: JSON.stringify(toXano(ev)),
-  }).then(fromXano);
+  });
+  return getEventos();
+};
 
 // DELETE /eventos/{id} — elimina un evento
 export const eliminarEvento = (id) =>
