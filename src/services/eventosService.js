@@ -1,18 +1,35 @@
-const BASE = 'https://x8ki-letl-twmt.n7.xano.io/api:sportshausen';
+const BASE = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace(/\/api$/, '');
+
+const authHeader = () => {
+  const token = localStorage.getItem('authToken');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
+const http = async (path, options = {}) => {
+  const res = await fetch(`${BASE}/api/eventos${path}`, {
+    headers: { 'Content-Type': 'application/json', ...authHeader(), ...options.headers },
+    ...options,
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    const msg = body.message || body.error || JSON.stringify(body) || `HTTP ${res.status}`;
+    throw new Error(msg);
+  }
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+};
 
 // ── Conversión de fecha ──────────────────────────────────────────────────────
 
-// { date, month, year } → Unix ms (mediodía para evitar desfases de zona horaria)
 const fechaObjToMs = ({ date, month, year }) =>
   new Date(year, month, date, 12, 0, 0).getTime();
 
-// Unix ms de Xano → { date, month, year }
 const msToFechaObj = (ms) => {
   const d = new Date(typeof ms === 'number' ? ms : Number(ms));
   return { date: d.getDate(), month: d.getMonth(), year: d.getFullYear() };
 };
 
-// ── Mapeo de campos Xano ↔ Frontend ─────────────────────────────────────────
+// ── Mapeo de campos ──────────────────────────────────────────────────────────
 
 const fromXano = (r) => ({
   id:         r.id,
@@ -20,63 +37,45 @@ const fromXano = (r) => ({
   duracion:   r.duracion,
   horaInicio: r.hora_inicio,
   horaFin:    r.hora_fin,
-  luchadores: r.luchadores,
+  luchadores: r.luchadores ?? r.vacantes,
   fecha:      msToFechaObj(r.fecha),
 });
 
+const getAgrupacionId = () => {
+  try {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    return user.id || Number(localStorage.getItem('userId')) || 0;
+  } catch { return 0; }
+};
+
 const toXano = (ev) => ({
-  nombre:      ev.nombre,
-  duracion:    ev.duracion,
-  hora_inicio: ev.horaInicio,
-  hora_fin:    ev.horaFin,
-  luchadores:  ev.luchadores,
-  fecha:       fechaObjToMs(ev.fecha),
+  nombre:        ev.nombre,
+  duracion:      ev.duracion,
+  hora_inicio:   ev.horaInicio,
+  luchadores:    ev.luchadores,
+  fecha:         fechaObjToMs(ev.fecha),
+  agrupacion_id: getAgrupacionId(),
 });
 
-// ── HTTP helper ──────────────────────────────────────────────────────────────
+// ── Endpoints ────────────────────────────────────────────────────────────────
 
-const http = async (path, options = {}) => {
-  const res = await fetch(`${BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...options.headers },
-    ...options,
-  });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    const msg  = body.message || body.error || JSON.stringify(body) || `HTTP ${res.status}`;
-    console.error(`[Xano ${options.method || 'GET'} ${path}]`, res.status, body);
-    throw new Error(msg);
-  }
-  const text = await res.text();
-  return text ? JSON.parse(text) : null;
-};
-
-// ── Endpoints CRUD ───────────────────────────────────────────────────────────
-
-// GET /eventos — lista todos los eventos
 export const getEventos = () =>
-  http('/eventos').then((data) => (Array.isArray(data) ? data.map(fromXano) : []));
+  http('').then((data) => {
+    const items = Array.isArray(data) ? data : (data?.items ?? []);
+    return items.map(fromXano);
+  });
 
-// POST /eventos — crea un evento nuevo
-// Xano devuelve body vacío en create/update, así que se refresca la lista completa
 export const crearEvento = async (ev) => {
   const payload = toXano(ev);
-  console.log('[Xano POST /eventos] payload →', payload);
-  await http('/eventos', {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  });
+  console.log('[POST /api/eventos] payload →', payload);
+  await http('', { method: 'POST', body: JSON.stringify(payload) });
   return getEventos();
 };
 
-// PUT /eventos/{id} — actualiza un evento existente
 export const actualizarEvento = async (id, ev) => {
-  await http(`/eventos/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(toXano(ev)),
-  });
+  await http(`/${id}`, { method: 'PUT', body: JSON.stringify(toXano(ev)) });
   return getEventos();
 };
 
-// DELETE /eventos/{id} — elimina un evento
 export const eliminarEvento = (id) =>
-  http(`/eventos/${id}`, { method: 'DELETE' });
+  http(`/${id}`, { method: 'DELETE' });
