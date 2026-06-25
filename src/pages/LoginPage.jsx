@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Eye, EyeOff, ArrowLeft, LogIn } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -16,6 +16,9 @@ export const LoginPage = () => {
   const [userName, setUserName] = useState('');
   const navigate = useNavigate();
   const { login } = useAuth();
+  const timerRef = useRef(null);
+
+  useEffect(() => () => { if (timerRef.current) clearTimeout(timerRef.current); }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -39,7 +42,7 @@ export const LoginPage = () => {
         if (userNameFromStorage) {
           try {
             const userData = JSON.parse(userNameFromStorage);
-            displayName = userData.nombre_artistico || userData.name || email;
+            displayName = userData.full_name || userData.nombre_artistico || userData.name || email;
           } catch (e) {
             displayName = userNameFromStorage;
           }
@@ -50,7 +53,7 @@ export const LoginPage = () => {
         
         // Redirigir según el tipo de usuario (usar lo que se guardó en localStorage)
         const userType = localStorage.getItem('userType') || 'luchador';
-        setTimeout(() => {
+        timerRef.current = setTimeout(() => {
           const dashboardUrl = userType === 'luchador' ? '/panel/luchador' : `/dashboard/${userType}`;
           navigate(dashboardUrl, { replace: true });
         }, 2500);

@@ -32,13 +32,14 @@ const msToFechaObj = (ms) => {
 // ── Mapeo de campos ──────────────────────────────────────────────────────────
 
 const fromXano = (r) => ({
-  id:         r.id,
-  nombre:     r.nombre,
-  duracion:   r.duracion,
-  horaInicio: r.hora_inicio,
-  horaFin:    r.hora_fin,
-  luchadores: r.luchadores ?? r.vacantes,
-  fecha:      msToFechaObj(r.fecha),
+  id:            r.id,
+  nombre:        r.nombre,
+  duracion:      r.duracion,
+  horaInicio:    r.hora_inicio,
+  horaFin:       r.hora_fin,
+  luchadores:    r.luchadores ?? r.vacantes,
+  fecha:         msToFechaObj(r.fecha),
+  agrupacion_id: r.agrupacion_id ?? 0,
 });
 
 const getAgrupacionId = () => {
@@ -66,9 +67,7 @@ export const getEventos = () =>
   });
 
 export const crearEvento = async (ev) => {
-  const payload = toXano(ev);
-  console.log('[POST /api/eventos] payload →', payload);
-  await http('', { method: 'POST', body: JSON.stringify(payload) });
+  await http('', { method: 'POST', body: JSON.stringify(toXano(ev)) });
   return getEventos();
 };
 

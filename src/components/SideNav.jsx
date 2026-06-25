@@ -2,27 +2,24 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const SideNav = ({ active, onSelect, isOpen = false, setIsOpen }) => {
-  const authed = typeof window !== 'undefined' && localStorage.getItem('authenticated') === 'true';
+  const authed = typeof window !== 'undefined' && !!localStorage.getItem('authToken');
   if (!authed) return null;
   const navigate = useNavigate();
   const userType = typeof window !== 'undefined' ? localStorage.getItem('userType') : null;
-  const baseItems = [
-    { id: 'home', label: 'Inicio', icon: '🏠' },
-    { id: 'profile', label: 'Mi perfil', icon: '👤' },
-    { id: 'calendar', label: 'Calendario', icon: '📅' },
-    { id: 'events', label: 'Eventos', icon: '📌' },
-    { id: 'offers', label: 'Ofertas', icon: '💼' },
-    { id: 'messages', label: 'Mensajes', icon: '💬' },
-    { id: 'notifications', label: 'Notificaciones', icon: '🔔' },
+  const allItems = [
+    { id: 'home',                label: 'Inicio',             icon: '🏠', roles: ['luchador', 'agrupacion', 'booker'] },
+    { id: 'profile',             label: 'Mi perfil',          icon: '👤', roles: ['luchador', 'agrupacion', 'booker'] },
+    { id: 'calendar',            label: 'Calendario',         icon: '📅', roles: ['luchador', 'agrupacion'] },
+    { id: 'events',              label: 'Eventos',            icon: '📌', roles: ['luchador', 'agrupacion'] },
+    { id: 'offers',              label: 'Ofertas',            icon: '💼', roles: ['luchador'] },
+    { id: 'postulaciones',       label: 'Postulaciones',      icon: '📋', roles: ['agrupacion'] },
+    { id: 'messages',            label: 'Mensajes',           icon: '💬', roles: ['luchador', 'agrupacion', 'booker'] },
+    { id: 'notifications',       label: 'Notificaciones',     icon: '🔔', roles: ['luchador', 'agrupacion', 'booker'] },
+    { id: 'tickets',             label: 'Mis Tickets',        icon: '🎫', roles: ['luchador'] },
+    { id: 'tickets-agrupacion',  label: 'Gestionar Tickets',  icon: '🎫', roles: ['agrupacion'] },
   ];
 
-  const ticketItems = userType === 'luchador'
-    ? [{ id: 'tickets', label: 'Mis Tickets', icon: '🎫' }]
-    : userType === 'agrupacion'
-    ? [{ id: 'tickets-agrupacion', label: 'Gestionar Tickets', icon: '🎫' }]
-    : [];
-
-  const items = [...baseItems, ...ticketItems];
+  const items = allItems.filter(item => !userType || item.roles.includes(userType));
 
   const handleClick = (id) => {
     const routes = {
@@ -30,16 +27,18 @@ const SideNav = ({ active, onSelect, isOpen = false, setIsOpen }) => {
                           : userType === 'booker'   ? '/dashboard/booker'
                           : '/dashboard/agrupacion',
       profile:              `/perfil/${localStorage.getItem('userId') || '1'}`,
-      calendar:             '/calendario-disponibilidad',
-      events:               '/mis-eventos',
+      calendar:             userType === 'agrupacion' ? '/agenda/agrupacion' : '/calendario-disponibilidad',
+      events:               userType !== 'agrupacion' ? '/mis-eventos' : null,
       offers:               '/ofertas',
+      postulaciones:        null,
       messages:             '/mensajeria',
       notifications:        '/notificaciones',
       tickets:              '/mis-tickets',
       'tickets-agrupacion': '/tickets/agrupacion',
     };
-    if (routes[id]) {
-      navigate(routes[id]);
+    const route = routes[id];
+    if (route) {
+      navigate(route);
     } else if (onSelect) {
       onSelect(id);
     }

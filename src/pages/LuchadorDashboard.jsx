@@ -1,17 +1,31 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Calendar, Clock, Link as LinkIcon } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { Calendar } from 'lucide-react';
 import Header from '../components/Header';
 import SideNav from '../components/SideNav';
 import Footer from '../components/Footer';
 import { CalendarioDisponibilidad } from './CalendarioDisponibilidad';
+import { getPostulacionesLuchador, getNotificacionesLuchador } from '../services/postulacionesService';
 
 const LuchadorDashboard = () => {
   const [activeTab, setActiveTab] = useState('home');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [misEventos, setMisEventos] = useState([]);
+  const [notificaciones, setNotificaciones] = useState([]);
   const navigate = useNavigate();
-  const currentUser = { displayName: 'Blake Parker' };
+
+  const luchadorId = localStorage.getItem('userId');
+  const currentUser = {
+    displayName: (() => {
+      try { const u = JSON.parse(localStorage.getItem('user') || '{}'); return u.nombre_artistico || u.full_name || u.name || 'Luchador'; } catch { return 'Luchador'; }
+    })()
+  };
+
+  useEffect(() => {
+    const postulaciones = getPostulacionesLuchador(luchadorId);
+    setMisEventos(postulaciones.filter(p => p.estado === 'ACEPTADA'));
+    setNotificaciones(getNotificacionesLuchador(luchadorId));
+  }, [luchadorId]);
 
   return (
     <div className="min-h-screen bg-sportshausen-light">
@@ -120,27 +134,35 @@ const LuchadorDashboard = () => {
 
           {activeTab === 'events' && (
             <div>
-              <h1 className="text-3xl font-bold text-sportshausen-dark mb-6">Mis Eventos</h1>
-              <div className="space-y-4">
-                {[
-                  { fecha: '23 Mayo', evento: 'FNL Doomsday', lugar: 'Santiago', estado: 'Confirmado' },
-                  { fecha: '30 Mayo', evento: 'Batalla Nocturna', lugar: 'Santiago', estado: 'Pendiente' },
-                  { fecha: '12 Junio', evento: 'WKC Showdown', lugar: 'Valparaíso', estado: 'Confirmado' },
-                ].map((ev, i) => (
-                  <div key={i} className="card-shadow bg-white p-5 rounded-lg flex items-center justify-between">
-                    <div className="flex gap-4 items-center">
-                      <Calendar className="text-sportshausen-red flex-shrink-0" size={20} />
-                      <div>
-                        <p className="font-bold text-sportshausen-dark">{ev.evento}</p>
-                        <p className="text-sm text-gray-500">{ev.fecha} · {ev.lugar}</p>
+              <h1 className="text-3xl font-bold text-sportshausen-dark mb-6">Mis Eventos Confirmados</h1>
+              {misEventos.length === 0 ? (
+                <div className="card-shadow bg-white rounded-lg p-10 text-center text-gray-500">
+                  <p>No tienes eventos confirmados aún.</p>
+                  <button onClick={() => navigate('/ofertas')} className="btn-primary mt-4">Ver Ofertas</button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {misEventos.map((ev) => {
+                    const fecha = ev.evento_fecha
+                      ? `${ev.evento_fecha.date}/${ev.evento_fecha.month + 1}/${ev.evento_fecha.year}`
+                      : '';
+                    return (
+                      <div key={ev.id} className="card-shadow bg-white p-5 rounded-lg flex items-center justify-between">
+                        <div className="flex gap-4 items-center">
+                          <Calendar className="text-sportshausen-red flex-shrink-0" size={20} />
+                          <div>
+                            <p className="font-bold text-sportshausen-dark">{ev.evento_nombre}</p>
+                            <p className="text-sm text-gray-500">{fecha}</p>
+                          </div>
+                        </div>
+                        <span className="px-3 py-1 rounded-full text-xs font-semibold badge-yellow">
+                          Confirmado
+                        </span>
                       </div>
-                    </div>
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${ev.estado === 'Confirmado' ? 'badge-yellow' : 'badge-outline'}`}>
-                      {ev.estado}
-                    </span>
-                  </div>
-                ))}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
 
@@ -181,21 +203,23 @@ const LuchadorDashboard = () => {
           {activeTab === 'notifications' && (
             <div>
               <h1 className="text-3xl font-bold text-sportshausen-dark mb-6">Notificaciones</h1>
-              <div className="space-y-3">
-                {[
-                  { msg: 'FNL ha visto tu perfil', time: 'Hace 2h', tipo: 'vista' },
-                  { msg: 'Nueva oferta disponible de WKC', time: 'Hace 4h', tipo: 'oferta' },
-                  { msg: 'Tu evento del 23 de Mayo fue confirmado', time: 'Ayer', tipo: 'evento' },
-                ].map((n, i) => (
-                  <div key={i} className="card-shadow bg-white p-4 rounded-lg flex gap-3 items-center">
-                    <div className={`w-2 h-2 rounded-full flex-shrink-0 ${n.tipo === 'oferta' ? 'bg-sportshausen-yellow' : n.tipo === 'evento' ? 'bg-sportshausen-red' : 'bg-sportshausen-gold'}`} />
-                    <div className="flex-1">
-                      <p className="text-sm font-semibold text-sportshausen-dark">{n.msg}</p>
-                      <p className="text-xs text-gray-500">{n.time}</p>
+              {notificaciones.length === 0 ? (
+                <div className="card-shadow bg-white rounded-lg p-10 text-center text-gray-500">
+                  Sin notificaciones.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {notificaciones.map((n) => (
+                    <div key={n.id} className="card-shadow bg-white p-4 rounded-lg flex gap-3 items-center">
+                      <div className={`w-2 h-2 rounded-full flex-shrink-0 ${n.msg.includes('ACEPTADA') ? 'bg-green-500' : 'bg-red-500'}`} />
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-sportshausen-dark">{n.msg}</p>
+                        <p className="text-xs text-gray-500">{new Date(n.fecha).toLocaleString('es-CL')}</p>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </main>

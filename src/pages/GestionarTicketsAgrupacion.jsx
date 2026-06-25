@@ -55,6 +55,12 @@ export default function GestionarTicketsAgrupacion() {
   // Modal: confirmar finalizar
   const [modalFinalizar, setModalFinalizar] = useState(null);
   const [finalizando, setFinalizando] = useState(false);
+  const [toast, setToast] = useState(null);
+
+  const showToast = (msg, type = 'success') => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 3500);
+  };
 
   const cargar = async () => {
     setLoading(true);
@@ -62,7 +68,7 @@ export default function GestionarTicketsAgrupacion() {
       const data = await ticketsAgrupacion();
       setTickets(data.tickets || []);
     } catch (error) {
-      alert('Error al cargar solicitudes: ' + error.message);
+      showToast('Error al cargar solicitudes: ' + error.message, 'error');
     } finally {
       setLoading(false);
     }
@@ -101,7 +107,7 @@ export default function GestionarTicketsAgrupacion() {
       const data = await obtenerMensajes(ticket.id);
       setMensajes(data.mensajes || []);
     } catch (error) {
-      alert('Error al cargar mensajes');
+      showToast('Error al cargar mensajes', 'error');
     } finally {
       setLoadingMsg(false);
     }
@@ -118,9 +124,9 @@ export default function GestionarTicketsAgrupacion() {
       setTickets((prev) =>
         prev.map((t) => t.id === modalDetalle.id ? { ...t, estado: 'EN_PROCESO' } : t)
       );
-      alert('✓ Mensaje enviado');
+      showToast('Mensaje enviado');
     } catch (error) {
-      alert('Error al enviar mensaje');
+      showToast('Error al enviar mensaje', 'error');
     } finally {
       setEnviando(false);
     }
@@ -131,14 +137,14 @@ export default function GestionarTicketsAgrupacion() {
     setEnviandoMsg(true);
     try {
       await enviarMensajeAgrupacion(modalMensaje, { contenido: textoMensaje.trim() });
-      alert('✓ Mensaje enviado');
+      showToast('Mensaje enviado');
       setModalMensaje(null);
       setTextoMensaje('');
       setTickets((prev) =>
         prev.map((t) => t.id === modalMensaje ? { ...t, estado: 'EN_PROCESO' } : t)
       );
     } catch (error) {
-      alert('Error al enviar mensaje');
+      showToast('Error al enviar mensaje', 'error');
     } finally {
       setEnviandoMsg(false);
     }
@@ -154,12 +160,12 @@ export default function GestionarTicketsAgrupacion() {
     setCambiandoPrioridad(true);
     try {
       const updated = await cambiarPrioridad(modalPrioridad.id, prioridadSel);
-      alert(`✓ Prioridad actualizada a ${prioridadLabel(prioridadSel)}`);
+      showToast(`Prioridad actualizada a ${prioridadLabel(prioridadSel)}`);
       setTickets((prev) => prev.map((t) => t.id === modalPrioridad.id ? { ...t, prioridad: prioridadSel } : t));
       if (modalDetalle?.id === modalPrioridad.id) setModalDetalle({ ...modalDetalle, prioridad: prioridadSel });
       setModalPrioridad(null);
     } catch (error) {
-      alert('Error al cambiar prioridad');
+      showToast('Error al cambiar prioridad', 'error');
     } finally {
       setCambiandoPrioridad(false);
     }
@@ -170,12 +176,12 @@ export default function GestionarTicketsAgrupacion() {
     setFinalizando(true);
     try {
       await finalizarTicket(modalFinalizar);
-      alert('✓ Ticket finalizado');
+      showToast('Ticket finalizado');
       setTickets((prev) => prev.map((t) => t.id === modalFinalizar ? { ...t, estado: 'CERRADO' } : t));
       if (modalDetalle?.id === modalFinalizar) setModalDetalle({ ...modalDetalle, estado: 'CERRADO' });
       setModalFinalizar(null);
     } catch (error) {
-      alert('Error al finalizar ticket');
+      showToast('Error al finalizar ticket', 'error');
     } finally {
       setFinalizando(false);
     }
@@ -191,6 +197,11 @@ export default function GestionarTicketsAgrupacion() {
 
   return (
     <main className="page-content min-h-screen bg-sportshausen-light">
+      {toast && (
+        <div className={`fixed top-6 right-6 z-[9999] px-5 py-3 rounded-xl shadow-lg text-white text-sm font-semibold transition-all ${toast.type === 'error' ? 'bg-red-600' : 'bg-green-600'}`}>
+          {toast.type === 'error' ? '✕ ' : '✓ '}{toast.msg}
+        </div>
+      )}
       <Header userType="agrupacion" />
       <div className="flex pt-16 min-h-screen">
         <SideNav active="calendar" onSelect={() => {}} />
@@ -338,14 +349,13 @@ export default function GestionarTicketsAgrupacion() {
           )}
 
           {/* Modal: Detalle */}
-          <Modal
-            isOpen={!!modalDetalle}
-            onClose={() => setModalDetalle(null)}
+          {modalDetalle && (
+            <Modal
+              isOpen={!!modalDetalle}
+              onClose={() => setModalDetalle(null)}
               title={`TKT-${String(modalDetalle.id).padStart(4, '0')} — Detalle`}
-              size="lg"
             >
               <div className="space-y-6">
-                {/* Info */}
                 <div className="space-y-3">
                   <div>
                     <p className="text-xs font-bold text-gray-500 uppercase">Tipo</p>
@@ -357,13 +367,12 @@ export default function GestionarTicketsAgrupacion() {
                   </div>
                   <div>
                     <p className="text-xs font-bold text-gray-500 uppercase">Estado</p>
-                    <p className={`badge badge--${ESTADO_BADGE[modalDetalle.estado]} mt-1`}>
-                      {ESTADO_LABEL[modalDetalle.estado]}
+                    <p className={`badge badge--${ESTADO_BADGE[modalDetalle.estado] ?? 'pendiente'} mt-1`}>
+                      {ESTADO_LABEL[modalDetalle.estado] ?? modalDetalle.estado}
                     </p>
                   </div>
                 </div>
 
-                {/* Chat */}
                 <div>
                   <p className="text-sm font-semibold text-gray-700 mb-3">Conversación</p>
                   <div
@@ -416,23 +425,16 @@ export default function GestionarTicketsAgrupacion() {
                   )}
                 </div>
 
-                {/* Acciones */}
                 <div className="flex gap-2 pt-4 border-t">
                   <button onClick={() => setModalDetalle(null)} className="flex-1 btn-secondary">
                     Cerrar
                   </button>
                   {modalDetalle.estado !== 'CERRADO' && (
                     <>
-                      <button
-                        onClick={() => abrirModalPrioridad(modalDetalle)}
-                        className="flex-1 btn-outline"
-                      >
+                      <button onClick={() => abrirModalPrioridad(modalDetalle)} className="flex-1 btn-outline">
                         Prioridad
                       </button>
-                      <button
-                        onClick={() => setModalFinalizar(modalDetalle.id)}
-                        className="flex-1 btn-outline text-red-600"
-                      >
+                      <button onClick={() => setModalFinalizar(modalDetalle.id)} className="flex-1 btn-outline text-red-600">
                         Finalizar
                       </button>
                     </>
@@ -440,13 +442,14 @@ export default function GestionarTicketsAgrupacion() {
                 </div>
               </div>
             </Modal>
+          )}
 
           {/* Modal: Cambiar Prioridad */}
-          <Modal
-            isOpen={!!modalPrioridad}
-            onClose={() => setModalPrioridad(null)}
+          {modalPrioridad && (
+            <Modal
+              isOpen={!!modalPrioridad}
+              onClose={() => setModalPrioridad(null)}
               title="Cambiar prioridad"
-              size="sm"
             >
               <div className="space-y-4">
                 <p className="text-sm text-gray-600">
@@ -459,10 +462,10 @@ export default function GestionarTicketsAgrupacion() {
                       onClick={() => setPrioridadSel(p.value)}
                       style={{
                         borderColor: p.color,
-                        backgroundColor: prioridadSel === p.value ? `${p.color}20` : 'white'
+                        backgroundColor: prioridadSel === p.value ? `${p.color}20` : 'white',
+                        color: p.color
                       }}
                       className={`w-full p-3 rounded-lg border-2 text-left font-semibold transition-all ${prioridadSel === p.value ? 'ring-2 ring-offset-2' : ''}`}
-                      style={{ color: p.color }}
                     >
                       {p.label}
                     </button>
@@ -482,13 +485,14 @@ export default function GestionarTicketsAgrupacion() {
                 </div>
               </div>
             </Modal>
+          )}
 
           {/* Modal: Mensaje Rápido */}
-          <Modal
-            isOpen={!!modalMensaje}
-            onClose={() => setModalMensaje(null)}
+          {modalMensaje && (
+            <Modal
+              isOpen={!!modalMensaje}
+              onClose={() => setModalMensaje(null)}
               title="Enviar mensaje"
-              size="sm"
             >
               <div className="space-y-4">
                 <textarea
@@ -512,13 +516,14 @@ export default function GestionarTicketsAgrupacion() {
                 </div>
               </div>
             </Modal>
+          )}
 
           {/* Modal: Confirmar Finalizar */}
-          <Modal
-            isOpen={!!modalFinalizar}
-            onClose={() => setModalFinalizar(null)}
+          {modalFinalizar && (
+            <Modal
+              isOpen={!!modalFinalizar}
+              onClose={() => setModalFinalizar(null)}
               title="Finalizar ticket"
-              size="sm"
             >
               <div className="space-y-4">
                 <p className="text-gray-600">
@@ -539,6 +544,7 @@ export default function GestionarTicketsAgrupacion() {
                 </div>
               </div>
             </Modal>
+          )}
         </main>
       </div>
       <Footer />

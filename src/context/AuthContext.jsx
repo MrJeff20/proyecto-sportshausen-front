@@ -63,7 +63,6 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('user', JSON.stringify(userData));
       localStorage.setItem('userType', userRole);
       localStorage.setItem('userId', userData.id || userData.user_id);
-      localStorage.setItem('authenticated', 'true');
 
       setToken(authToken);
       setUser(userData);
@@ -114,7 +113,6 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('user', JSON.stringify(userData));
       localStorage.setItem('userType', userRole);
       localStorage.setItem('userId', userData.id || userData.user_id);
-      localStorage.setItem('authenticated', 'true');
 
       setToken(authToken);
       setUser(userData);
@@ -154,7 +152,6 @@ export const AuthProvider = ({ children }) => {
     } finally {
       localStorage.removeItem('authToken');
       localStorage.removeItem('user');
-      localStorage.removeItem('authenticated');
       localStorage.removeItem('userType');
       localStorage.removeItem('userId');
 

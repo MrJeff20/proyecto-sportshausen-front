@@ -26,7 +26,7 @@ export const Toast = ({ type = 'success', message, onClose }) => {
   return (
     <div className={`fixed bottom-4 right-4 ${bgColors[type]} border-l-4 rounded-lg p-4 flex items-center gap-3 shadow-lg max-w-md animate-slide-up`}>
       <span className={textColors[type]}>{icons[type]}</span>
-      <span className={textColors[type]} className="flex-1">{message}</span>
+      <span className={`${textColors[type]} flex-1`}>{message}</span>
       <button onClick={onClose} className="ml-2 hover:opacity-70">
         <X size={18} />
       </button>

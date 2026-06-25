@@ -26,7 +26,13 @@ const MisTicketsLuchador = () => {
   const [loadingMensajes, setLoadingMensajes] = useState(false);
   const [textoRespuesta, setTextoRespuesta] = useState('');
   const [enviandoRespuesta, setEnviandoRespuesta] = useState(false);
+  const [toast, setToast] = useState(null);
   const chatRef = useRef(null);
+
+  const showToast = (msg, type = 'success') => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 3500);
+  };
 
   useEffect(() => {
     cargarTickets();
@@ -45,7 +51,7 @@ const MisTicketsLuchador = () => {
       setTickets(data.tickets || []);
     } catch (error) {
       console.error('Error:', error);
-      alert('Error al cargar tickets: ' + error.message);
+      showToast('Error al cargar tickets: ' + error.message, 'error');
     } finally {
       setLoading(false);
     }
@@ -60,7 +66,7 @@ const MisTicketsLuchador = () => {
       setMensajes(data.mensajes || []);
     } catch (error) {
       console.error('Error:', error);
-      alert('Error al cargar mensajes');
+      showToast('Error al cargar mensajes', 'error');
     } finally {
       setLoadingMensajes(false);
     }
@@ -78,9 +84,9 @@ const MisTicketsLuchador = () => {
       setTextoRespuesta('');
       const data = await obtenerMensajes(modalDetalle.id);
       setMensajes(data.mensajes || []);
-      alert('✓ Mensaje enviado');
+      showToast('Mensaje enviado');
     } catch (error) {
-      alert('Error al enviar mensaje: ' + error.message);
+      showToast('Error al enviar mensaje: ' + error.message, 'error');
     } finally {
       setEnviandoRespuesta(false);
     }
@@ -96,7 +102,12 @@ const MisTicketsLuchador = () => {
 
   return (
     <div className="min-h-screen bg-sportshausen-light">
-      <Header userType="luchador" isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+      {toast && (
+        <div className={`fixed top-6 right-6 z-[9999] px-5 py-3 rounded-xl shadow-lg text-white text-sm font-semibold ${toast.type === 'error' ? 'bg-red-600' : 'bg-green-600'}`}>
+          {toast.type === 'error' ? '✕ ' : '✓ '}{toast.msg}
+        </div>
+      )}
+      <Header userType={localStorage.getItem('userType') || 'luchador'} isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
       <div className="flex pt-16 min-h-screen">
         <SideNav active="tickets" onSelect={() => {}} isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
 

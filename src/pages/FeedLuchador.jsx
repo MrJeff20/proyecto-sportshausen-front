@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Home, Users, Calendar, Trophy, MessageCircle, Bell, Settings, LogOut, Heart, MessageSquare, Share2, MoreHorizontal } from 'lucide-react';
+import { Search, Home, Users, Calendar, MessageCircle, Bell, Heart, MessageSquare, Share2, MoreHorizontal } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Footer from '../components/Footer';
 import Header from '../components/Header';

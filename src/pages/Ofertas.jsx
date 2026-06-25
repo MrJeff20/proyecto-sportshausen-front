@@ -1,17 +1,14 @@
-import React, { useState } from 'react';
-import { MapPin, Calendar, DollarSign, Users, Filter, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { MapPin, Calendar, Users, Filter, X } from 'lucide-react';
 import Header from '../components/Header';
 import SideNav from '../components/SideNav';
 import Footer from '../components/Footer';
 import { crearTicket } from '../services/ticketService';
+import { getEventos } from '../services/eventosService';
+import { crearPostulacion } from '../services/postulacionesService';
 
-const ofertas = [
-  { id: 1, org: 'FNL', org_id: 1, titulo: 'Luchador Estelar — Copa Nacional', desc: 'Se busca luchador técnico para combate principal. Experiencia mínima 3 años.', fecha: '20 Jun 2026', tarifa: '$200.000', lugar: 'Santiago', cupos: 2, tag: 'Destacado', cierre: '15 Jun' },
-  { id: 2, org: 'WKC', org_id: 2, titulo: 'Combate de Campeonato', desc: 'Disputa del cinturón regional WKC. Se requiere experiencia en combates de título.', fecha: '5 Jul 2026', tarifa: '$350.000', lugar: 'Valparaíso', cupos: 1, tag: 'Urgente', cierre: '28 Jun' },
-  { id: 3, org: '5 Luchas Clandestino', org_id: 3, titulo: 'Lucha de Apertura', desc: 'Show familiar. Buen ambiente y público. Ideal para luchadores emergentes.', fecha: '12 Jul 2026', tarifa: '$80.000', lugar: 'Concepción', cupos: 4, tag: 'Nuevo', cierre: '5 Jul' },
-  { id: 4, org: 'Andes Pro Wrestling', org_id: 4, titulo: 'Open Andino — Categoría Pro', desc: 'Torneo abierto categoría profesional. Clasificatorio a campeonato latinoamericano.', fecha: '8 Ago 2026', tarifa: '$120.000', lugar: 'Antofagasta', cupos: 8, tag: 'Nuevo', cierre: '1 Ago' },
-  { id: 5, org: 'Agrupación Elite', org_id: 5, titulo: 'Show Premium — Noche de Campeones', desc: 'Evento premium con transmisión online. Contrato por 2 presentaciones.', fecha: '22 Ago 2026', tarifa: '$280.000', lugar: 'Santiago', cupos: 3, tag: 'Destacado', cierre: '15 Ago' },
-];
+const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const fmtFecha = ({ date, month, year }) => `${date} ${meses[month]} ${year}`;
 
 const TIPOS_TICKET = [
   'Consulta sobre evento',
@@ -20,19 +17,64 @@ const TIPOS_TICKET = [
   'Otro asunto'
 ];
 
-const tagStyle = { Destacado: 'badge-yellow', Urgente: 'badge-red', Nuevo: 'badge-dark' };
 
 const Ofertas = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [postulados, setPostulados] = useState([]);
   const [modalTicket, setModalTicket] = useState(null);
+  const [eventosApi, setEventosApi] = useState([]);
+  const [loadingEventos, setLoadingEventos] = useState(true);
   const [ticketForm, setTicketForm] = useState({
     tipo_solicitud: '',
     motivo: '',
   });
   const [enviandoTicket, setEnviandoTicket] = useState(false);
+  const [toast, setToast] = useState(null);
 
-  const postular = (id) => setPostulados(prev => prev.includes(id) ? prev : [...prev, id]);
+  useEffect(() => {
+    getEventos()
+      .then(data => {
+        const hoy = Date.now();
+        setEventosApi(
+          data
+            .filter(ev => new Date(ev.fecha.year, ev.fecha.month, ev.fecha.date).getTime() >= hoy)
+            .sort((a, b) =>
+              new Date(a.fecha.year, a.fecha.month, a.fecha.date) -
+              new Date(b.fecha.year, b.fecha.month, b.fecha.date)
+            )
+        );
+      })
+      .catch(() => {})
+      .finally(() => setLoadingEventos(false));
+  }, []);
+
+  const showToast = (msg, type = 'success') => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 3500);
+  };
+
+  const postular = (evento) => {
+    const luchadorId = localStorage.getItem('userId');
+    const userData = (() => { try { return JSON.parse(localStorage.getItem('user') || '{}'); } catch { return {}; } })();
+    try {
+      crearPostulacion({
+        luchador_id:      parseInt(luchadorId) || 0,
+        luchador_nombre:  userData.nombre_artistico || userData.full_name || userData.name || 'Luchador',
+        luchador_ciudad:  userData.ciudad || '',
+        luchador_peso:    userData.peso || '',
+        luchador_estatura: userData.estatura || '',
+        luchador_experiencia: userData.experiencia || '',
+        evento_id:        evento.id,
+        evento_nombre:    evento.nombre,
+        evento_fecha:     evento.fecha,
+        agrupacion_id:    evento.agrupacion_id,
+      });
+      setPostulados(prev => [...prev, evento.id]);
+      showToast('¡Postulación enviada! La agrupación revisará tu perfil.');
+    } catch (err) {
+      showToast(err.message || 'Error al postular', 'error');
+    }
+  };
 
   const abrirTicket = (oferta) => {
     setModalTicket(oferta);
@@ -41,7 +83,7 @@ const Ofertas = () => {
 
   const handleEnviarTicket = async () => {
     if (!ticketForm.tipo_solicitud || ticketForm.motivo.trim().length < 10) {
-      alert('Completa todos los campos (mínimo 10 caracteres)');
+      showToast('Completa todos los campos (mínimo 10 caracteres)', 'error');
       return;
     }
 
@@ -53,10 +95,10 @@ const Ofertas = () => {
         agrupacion_id: modalTicket.org_id,
       });
 
-      alert('✓ Ticket enviado exitosamente');
+      showToast('Ticket enviado exitosamente');
       setModalTicket(null);
     } catch (error) {
-      alert('Error al enviar ticket: ' + error.message);
+      showToast('Error al enviar ticket: ' + error.message, 'error');
     } finally {
       setEnviandoTicket(false);
     }
@@ -64,6 +106,11 @@ const Ofertas = () => {
 
   return (
     <div className="min-h-screen bg-sportshausen-light">
+      {toast && (
+        <div className={`fixed top-6 right-6 z-[9999] px-5 py-3 rounded-xl shadow-lg text-white text-sm font-semibold ${toast.type === 'error' ? 'bg-red-600' : 'bg-green-600'}`}>
+          {toast.type === 'error' ? '✕ ' : '✓ '}{toast.msg}
+        </div>
+      )}
       <Header userType="luchador" isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
       <div className="flex pt-16 min-h-screen">
         <SideNav active="offers" onSelect={() => {}} isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
@@ -76,58 +123,81 @@ const Ofertas = () => {
             </div>
             <div className="flex items-center gap-2 bg-white rounded-lg px-4 py-2 border border-gray-200 text-sm text-gray-600">
               <Filter size={16} />
-              <span>{ofertas.length} ofertas disponibles</span>
+              <span>{eventosApi.length} evento{eventosApi.length !== 1 ? 's' : ''} disponible{eventosApi.length !== 1 ? 's' : ''}</span>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {ofertas.map(of => (
-              <article key={of.id} className="bg-white rounded-2xl p-6 card-shadow hover:shadow-lg transition-all border border-transparent hover:border-sportshausen-red/30 flex flex-col">
-                <div className="flex justify-between items-start mb-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-sportshausen-red to-red-700 rounded-xl flex items-center justify-center text-white font-black text-lg">
-                    {of.org[0]}
+          {loadingEventos ? (
+            <div className="flex justify-center py-20">
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-sportshausen-red" />
+            </div>
+          ) : eventosApi.length === 0 ? (
+            <div className="text-center py-20 text-gray-500">
+              <Calendar size={40} className="mx-auto mb-3 text-gray-300" />
+              <p>No hay eventos publicados en este momento.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {eventosApi.map(ev => (
+                <article key={ev.id} className="bg-white rounded-2xl p-6 card-shadow hover:shadow-lg transition-all border border-transparent hover:border-sportshausen-red/30 flex flex-col">
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="w-12 h-12 bg-gradient-to-br from-sportshausen-red to-red-700 rounded-xl flex items-center justify-center text-white font-black text-lg">
+                      {ev.nombre[0]}
+                    </div>
+                    <span className="badge-dark">Evento</span>
                   </div>
-                  <span className={tagStyle[of.tag]}>{of.tag}</span>
-                </div>
 
-                <p className="text-xs font-bold text-sportshausen-red mb-1 uppercase tracking-wide">{of.org}</p>
-                <h3 className="text-xl font-bold text-sportshausen-dark mb-2">{of.titulo}</h3>
-                <p className="text-sm text-gray-600 mb-4 flex-1">{of.desc}</p>
+                  <h3 className="text-xl font-bold text-sportshausen-dark mb-2">{ev.nombre}</h3>
+                  <p className="text-sm text-gray-600 mb-4 flex-1">
+                    {ev.luchadores ? `Se buscan ${ev.luchadores} luchadores para este evento.` : 'Evento abierto a postulaciones.'}
+                  </p>
 
-                <div className="grid grid-cols-2 gap-2 text-sm text-gray-600 mb-4">
-                  <span className="flex items-center gap-1"><Calendar size={14} className="text-sportshausen-red" />{of.fecha}</span>
-                  <span className="flex items-center gap-1"><MapPin size={14} className="text-sportshausen-red" />{of.lugar}</span>
-                  <span className="flex items-center gap-1"><Users size={14} className="text-sportshausen-red" />{of.cupos} cupos</span>
-                  <span className="text-xs text-gray-400">Cierre: {of.cierre}</span>
-                </div>
+                  <div className="grid grid-cols-2 gap-2 text-sm text-gray-600 mb-4">
+                    <span className="flex items-center gap-1">
+                      <Calendar size={14} className="text-sportshausen-red" />
+                      {fmtFecha(ev.fecha)}
+                    </span>
+                    {ev.horaInicio && (
+                      <span className="flex items-center gap-1 text-gray-500">
+                        🕐 {ev.horaInicio}{ev.horaFin ? ` – ${ev.horaFin}` : ''}
+                      </span>
+                    )}
+                    {ev.luchadores && (
+                      <span className="flex items-center gap-1">
+                        <Users size={14} className="text-sportshausen-red" />{ev.luchadores} cupos
+                      </span>
+                    )}
+                    {ev.duracion && (
+                      <span className="text-xs text-gray-400">{ev.duracion} min</span>
+                    )}
+                  </div>
 
-                <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                  <p className="text-xl font-bold text-sportshausen-red">{of.tarifa} CLP</p>
-                  <div className="flex gap-2">
-                    {postulados.includes(of.id) ? (
-                      <span className="badge-yellow px-4 py-2 text-sm whitespace-nowrap">✓ Postulado</span>
-                    ) : (
-                      <>
+                  <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                    <p className="text-sm text-gray-500">A consultar</p>
+                    <div className="flex gap-2">
+                      {postulados.includes(ev.id) ? (
+                        <span className="badge-yellow px-4 py-2 text-sm whitespace-nowrap">✓ Postulado</span>
+                      ) : (
                         <button
-                          onClick={() => postular(of.id)}
+                          onClick={() => postular(ev)}
                           className="btn-primary text-sm px-3 py-2 whitespace-nowrap"
                         >
                           Postularme
                         </button>
-                      </>
-                    )}
-                    <button
-                      onClick={() => abrirTicket(of)}
-                      className="btn-outline text-sm px-3 py-2 whitespace-nowrap"
-                      title="Enviar una consulta a esta agrupación"
-                    >
-                      🎫 Ticket
-                    </button>
+                      )}
+                      <button
+                        onClick={() => abrirTicket({ id: ev.id, org: ev.nombre, org_id: ev.id })}
+                        className="btn-outline text-sm px-3 py-2 whitespace-nowrap"
+                        title="Enviar una consulta sobre este evento"
+                      >
+                        🎫 Ticket
+                      </button>
+                    </div>
                   </div>
-                </div>
-              </article>
-            ))}
-          </div>
+                </article>
+              ))}
+            </div>
+          )}
 
           {/* Modal: Crear Ticket */}
           {modalTicket && (

@@ -111,7 +111,7 @@ const Mensajeria = () => {
 
   return (
     <div className="min-h-screen bg-sportshausen-light flex flex-col">
-      <Header userType="luchador" isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+      <Header userType={localStorage.getItem('userType') || 'luchador'} isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
 
       <div className="flex flex-1 pt-16 overflow-hidden">
         <SideNav active="messages" onSelect={() => {}} isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />

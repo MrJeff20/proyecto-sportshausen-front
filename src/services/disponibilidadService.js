@@ -1,4 +1,4 @@
-const XANO_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:disponibilidad/disponibilidad';
+const BASE = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace(/\/api$/, '');
 
 const headers = () => {
   const token = localStorage.getItem('authToken');
@@ -19,20 +19,17 @@ const handle = async (res) => {
 };
 
 export const getFechas = () =>
-  fetch(XANO_URL, { headers: headers() }).then(handle);
+  fetch(`${BASE}/api/disponibilidad`, { headers: headers() }).then(handle);
 
-export const upsertFecha = (fecha, status, razon = '') => {
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const user_id = user.id || localStorage.getItem('userId');
-  return fetch(XANO_URL, {
+export const upsertFecha = (fecha, status, razon = '') =>
+  fetch(`${BASE}/api/disponibilidad`, {
     method: 'POST',
     headers: headers(),
-    body: JSON.stringify({ fecha, status, razon, user_id }),
+    body: JSON.stringify({ fecha, status, razon }),
   }).then(handle);
-};
 
 export const deleteFecha = (fecha) =>
-  fetch(`${XANO_URL}/${fecha}`, {
+  fetch(`${BASE}/api/disponibilidad/${fecha}`, {
     method: 'DELETE',
     headers: headers(),
   }).then(handle);

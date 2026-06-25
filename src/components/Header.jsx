@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, Bell, LogOut, LogIn, Home, Search, MessageCircle, Users, Briefcase } from 'lucide-react';
+import { Menu, X, Bell, LogIn, Search } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import SideNav from './SideNav';
 import { useAuth } from '../context/AuthContext';
+import logo4 from '../assets/logo4.png';
 
 export const Header = ({ userType = 'guest', isOpen: propIsOpen, setIsOpen: propSetIsOpen, onLogout = () => {} }) => {
   const navigate = useNavigate();
@@ -22,13 +23,24 @@ export const Header = ({ userType = 'guest', isOpen: propIsOpen, setIsOpen: prop
   const [leftMenuOpen, setLeftMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [unreadCount, setUnreadCount] = useState(() => {
+    try { return parseInt(localStorage.getItem('sportshausen_notifs_unread') || '0', 10); } catch { return 0; }
+  });
   const location = useLocation();
-  const authed = typeof window !== 'undefined' && localStorage.getItem('authenticated') === 'true';
+
+  useEffect(() => {
+    const sync = () => {
+      try { setUnreadCount(parseInt(localStorage.getItem('sportshausen_notifs_unread') || '0', 10)); } catch {}
+    };
+    window.addEventListener('notifs-updated', sync);
+    return () => window.removeEventListener('notifs-updated', sync);
+  }, []);
+  const authed = typeof window !== 'undefined' && !!localStorage.getItem('authToken');
   // Show left drawer for authenticated users on app pages, but hide on landing and login
   const showLeftDrawer = authed && !['/', '/login'].includes(location.pathname);
   const userId = typeof window !== 'undefined' ? (localStorage.getItem('userId') || '1') : '1';
   const userTypeStored = typeof window !== 'undefined' ? localStorage.getItem('userType') : null;
-  const dashboardPath = userTypeStored === 'luchador' ? '/dashboard/luchador' : userTypeStored === 'agrupacion' ? '/dashboard/agrupacion' : '/dashboard';
+  const dashboardPath = userTypeStored === 'luchador' ? '/panel/luchador' : userTypeStored === 'agrupacion' ? '/dashboard/agrupacion' : '/dashboard/booker';
   const menuItems = [
     { label: 'Perfil', to: `/perfil/${userId}` },
     { label: 'Dashboard', to: dashboardPath },
@@ -67,7 +79,7 @@ export const Header = ({ userType = 'guest', isOpen: propIsOpen, setIsOpen: prop
             </button>
             <button onClick={() => {
               try {
-                const authed = localStorage.getItem('authenticated') === 'true';
+                const authed = !!localStorage.getItem('authToken');
                 if (authed) {
                   if (userTypeStored === 'luchador') navigate('/panel/luchador');
                   else if (userTypeStored === 'agrupacion') navigate('/dashboard/agrupacion');
@@ -78,7 +90,7 @@ export const Header = ({ userType = 'guest', isOpen: propIsOpen, setIsOpen: prop
               } catch (e) { navigate('/'); }
             }} className="flex items-center gap-2 hover:opacity-80 transition-opacity flex-shrink-0">
               <div className="w-10 h-10 rounded-lg overflow-hidden flex items-center justify-center shadow-md bg-white">
-                <img src="/src/assets/logo4.png" alt="SportsHausen" className="w-full h-full object-cover" />
+                <img src={logo4} alt="SportsHausen" className="w-full h-full object-cover" />
               </div>
               <span className="hidden sm:block text-xl font-bold text-white font-display">
                 SportsHausen
@@ -141,7 +153,10 @@ export const Header = ({ userType = 'guest', isOpen: propIsOpen, setIsOpen: prop
                         onChange={e => setSearchQuery(e.target.value)}
                         onKeyDown={e => {
                           if (e.key === 'Enter' && searchQuery.trim()) {
-                            navigate(`/dashboard/booker`);
+                            const dest = userTypeStored === 'luchador' ? '/panel/luchador'
+                              : userTypeStored === 'agrupacion' ? '/dashboard/agrupacion'
+                              : '/dashboard/booker';
+                            navigate(dest);
                             setSearchOpen(false);
                             setSearchQuery('');
                           }
@@ -160,9 +175,9 @@ export const Header = ({ userType = 'guest', isOpen: propIsOpen, setIsOpen: prop
                     </button>
                   )}
                 </div>
-                <button className="hidden md:flex items-center gap-2 px-4 py-2 text-white/70 hover:bg-white/10 rounded-full transition-colors relative">
+                <button onClick={() => navigate('/notificaciones')} className="hidden md:flex items-center gap-2 px-4 py-2 text-white/70 hover:bg-white/10 rounded-full transition-colors relative">
                   <Bell size={18} />
-                  <span className="absolute top-1 right-1 w-2 h-2 bg-sporthausen-accent rounded-full"></span>
+                  {unreadCount > 0 && <span className="absolute top-1 right-1 w-2 h-2 bg-sporthausen-accent rounded-full"></span>}
                 </button>
                 <div className="hidden md:flex items-center gap-3 pl-4 border-l border-white/20 relative">
                   <button onClick={() => setMenuOpen(!menuOpen)} className="w-9 h-9 bg-gradient-to-br from-sporthausen-secondary to-teal-600 rounded-full flex items-center justify-center text-white font-bold text-sm cursor-pointer hover:ring-2 ring-sporthausen-accent transition-all">
@@ -171,9 +186,8 @@ export const Header = ({ userType = 'guest', isOpen: propIsOpen, setIsOpen: prop
                   {/* Dropdown menu */}
                   {menuOpen && (
                     <div className="absolute right-0 mt-12 w-56 bg-white rounded-md shadow-lg border border-gray-100 z-50">
-                      <button onClick={() => { setMenuOpen(false); navigate(dashboardPath); }} className="w-full text-left px-4 py-2 text-sporthausen-neutral-dark hover:bg-sporthausen-neutral-light">Mi Perfil</button>
-                      <button onClick={() => { setMenuOpen(false); navigate('/panel/luchador'); }} className="w-full text-left px-4 py-2 text-sporthausen-neutral-dark hover:bg-sporthausen-neutral-light">Panel de Luchador</button>
-                      <button onClick={() => { setMenuOpen(false); navigate('/settings'); }} className="w-full text-left px-4 py-2 text-sporthausen-neutral-dark hover:bg-sporthausen-neutral-light">Ajustes</button>
+                      <button onClick={() => { setMenuOpen(false); navigate(`/perfil/${userId}`); }} className="w-full text-left px-4 py-2 text-sporthausen-neutral-dark hover:bg-sporthausen-neutral-light">Mi Perfil</button>
+                      <button onClick={() => { setMenuOpen(false); navigate(dashboardPath); }} className="w-full text-left px-4 py-2 text-sporthausen-neutral-dark hover:bg-sporthausen-neutral-light">Mi Dashboard</button>
                       <div className="border-t border-gray-100" />
                       <button onClick={() => { setMenuOpen(false); handleLogout(); }} className="w-full text-left px-4 py-2 text-sporthausen-accent hover:bg-sporthausen-neutral-light font-semibold">Cerrar sesión</button>
                     </div>

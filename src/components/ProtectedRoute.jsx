@@ -32,7 +32,8 @@ export const ProtectedRoute = ({ children, requiredRole = null }) => {
   // Si se requiere un rol específico y no lo tiene, redirigir a su dashboard
   if (requiredRole && user?.role !== requiredRole) {
     const userRole = user?.role || 'luchador';
-    return <Navigate to={`/dashboard/${userRole}`} replace />;
+    const redirectTo = userRole === 'luchador' ? '/panel/luchador' : `/dashboard/${userRole}`;
+    return <Navigate to={redirectTo} replace />;
   }
 
   return children;

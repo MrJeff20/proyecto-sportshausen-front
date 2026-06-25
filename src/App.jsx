@@ -88,11 +88,11 @@ function App() {
           }
         />
 
-        {/* Ruta de Calendario - Protegida */}
+        {/* Ruta de Calendario - Solo luchadores */}
         <Route
           path="/calendario-disponibilidad"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute requiredRole="luchador">
               <CalendarioDisponibilidad />
             </ProtectedRoute>
           }

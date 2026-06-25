@@ -1,9 +1,12 @@
 import React from 'react';
-import { Mail, Phone, MapPin, Share2 } from 'lucide-react';
+import { Mail, Phone, Share2 } from 'lucide-react';
 
-export const Footer = () => {
+export const Footer = ({ withSidebar }) => {
+  const authed = typeof window !== 'undefined' && !!localStorage.getItem('authToken');
+  const hasSidebar = withSidebar ?? authed;
+
   return (
-    <footer className="bg-sporthausen-primary text-white py-16">
+    <footer className={`bg-sporthausen-primary text-white py-16 ${hasSidebar ? 'md:ml-64' : ''}`}>
       <div className="max-w-7xl mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           {/* Company */}

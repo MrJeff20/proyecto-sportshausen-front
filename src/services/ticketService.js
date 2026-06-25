@@ -1,10 +1,14 @@
-const BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const BASE = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace(/\/api$/, '');
 
 const headers = () => {
   const token = localStorage.getItem('authToken');
+  const userId = localStorage.getItem('userId');
+  const userType = localStorage.getItem('userType');
   return {
     'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {})
+    ...(token    ? { Authorization: `Bearer ${token}` } : {}),
+    ...(userId   ? { 'X-User-Id': userId }               : {}),
+    ...(userType ? { 'X-User-Role': userType }           : {})
   };
 };
 

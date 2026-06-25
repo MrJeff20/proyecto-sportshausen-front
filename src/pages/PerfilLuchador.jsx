@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Star, MapPin, Mail, Share2, Phone, Calendar, MessageSquare, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import SideNav from '../components/SideNav';
 import Footer from '../components/Footer';
 import { crearConversacion } from '../services/mensajeriaService';
+import { usersAPI } from '../services/api';
 
 export const PerfilLuchador = () => {
   const { id } = useParams();
@@ -20,17 +21,66 @@ export const PerfilLuchador = () => {
   const [previewRole, setPreviewRole] = useState('talent');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [enviandoMensaje, setEnviandoMensaje] = useState(false);
+  const [guardando, setGuardando] = useState(false);
+  const [toast, setToast] = useState(null);
 
-  // Calendar state — loads from localStorage (same key as CalendarioDisponibilidad)
+  const showToast = (msg, type = 'success') => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 3500);
+  };
+
+  // luchador declarado antes de los useEffects que lo referencian
+  const [luchador, setLuchador] = useState({
+    nombre: '',
+    nombreLegal: '',
+    ciudad: '',
+    experiencia: '',
+    peso: '',
+    estatura: '',
+    edad: '',
+    calificacion: 0,
+    resenas: 0,
+    banner: 'bg-gradient-to-r from-sportshausen-red to-sportshausen-dark',
+    redes: [
+      { icon: Mail, url: '#', name: 'Email' },
+      { icon: Share2, url: '#', name: 'Compartir' },
+      { icon: Phone, url: '#', name: 'Teléfono' },
+    ]
+  });
+  const [loadingPerfil, setLoadingPerfil] = useState(true);
+
+  // Calendar state
   const today = new Date();
   const [calMonth, setCalMonth] = useState(today.getMonth());
   const [calYear, setCalYear] = useState(today.getFullYear());
   const [occupiedDates, setOccupiedDates] = useState([]);
 
+  // Cargar perfil desde API
+  useEffect(() => {
+    const targetId = id || myUserId;
+    if (!targetId) { setLoadingPerfil(false); return; }
+    usersAPI.getProfileById(targetId)
+      .then(data => {
+        if (data) {
+          setLuchador(prev => ({
+            ...prev,
+            nombre: data.nombre_artistico || data.full_name || data.name || prev.nombre,
+            nombreLegal: data.full_name || data.nombre_real || prev.nombreLegal,
+            ciudad: data.ciudad || data.city || prev.ciudad,
+            experiencia: data.experiencia ?? data.years_experience ?? prev.experiencia,
+            peso: data.peso ?? data.weight ?? prev.peso,
+            estatura: data.estatura ?? data.height ?? prev.estatura,
+            edad: data.edad ?? data.age ?? prev.edad,
+          }));
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoadingPerfil(false));
+  }, [id, myUserId]);
+
   useEffect(() => {
     try {
       const saved = JSON.parse(localStorage.getItem('occupiedDates') || '[]');
-      // Normalize: old format was {date} only, new format is {date, month, year}
       setOccupiedDates(saved);
     } catch { setOccupiedDates([]); }
   }, []);
@@ -55,14 +105,15 @@ export const PerfilLuchador = () => {
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
+    if (!luchador.nombre) return;
     try {
       const stored = JSON.parse(localStorage.getItem('connections') || '[]');
       setConnected(stored.includes(luchador.nombre));
-    } catch (e) {
+    } catch {
       setConnected(false);
     }
-  }, []);
+  }, [luchador.nombre]);
 
   // close edit mode when entering preview; keep preview read-only
   React.useEffect(() => {
@@ -87,26 +138,14 @@ export const PerfilLuchador = () => {
     }
   };
 
-  const [luchador, setLuchador] = useState({
-    nombre: 'Phoenix',
-    nombreLegal: 'Carlos Alberto Rodríguez',
-    ciudad: 'Santiago',
-    experiencia: 8,
-    peso: 85,
-    estatura: 180,
-    edad: 30,
-    calificacion: 4.8,
-    resenas: 24,
-    banner: 'bg-gradient-to-r from-sportshausen-red to-sportshausen-dark',
-    redes: [
-      { icon: Mail, url: '#', name: 'Email' },
-      { icon: Share2, url: '#', name: 'Compartir' },
-      { icon: Phone, url: '#', name: 'Teléfono' },
-    ]
-  });
 
   return (
     <div className="min-h-screen bg-sporthausen-neutral-light">
+      {toast && (
+        <div className={`fixed top-6 right-6 z-[9999] px-5 py-3 rounded-xl shadow-lg text-white text-sm font-semibold ${toast.type === 'error' ? 'bg-red-600' : 'bg-green-600'}`}>
+          {toast.type === 'error' ? '✕ ' : '✓ '}{toast.msg}
+        </div>
+      )}
       <Header userType="luchador" isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
       <SideNav active={'profile'} onSelect={()=>{}} isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
 
@@ -153,35 +192,23 @@ export const PerfilLuchador = () => {
                       </div>
                     </div>
 
-                    {/* Middle column: biography */}
-                    <div className="md:col-span-2">
-                      <h3 className="text-lg font-semibold mb-2">Biografía</h3>
-                      <p className="text-gray-600 mb-4">Luchador con amplia experiencia en el circuito nacional. Técnico agresivo, conocido por su estilo aéreo y finishers contundentes. Ha participado en múltiples promociones y eventos destacados.</p>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-sm text-gray-500">Debut</p>
-                          <p className="font-semibold">2008</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-500">Reseñas</p>
-                          <p className="font-semibold">{luchador.resenas}</p>
-                        </div>
+                    {/* Middle column */}
+                    <div className="md:col-span-2 space-y-4">
+                      <div>
+                        <p className="text-sm text-gray-500">Nombre artístico</p>
+                        <p className="font-bold text-xl text-sportshausen-dark">{luchador.nombre || '—'}</p>
                       </div>
-
-                      <div className="mt-4">
-                        <h4 className="text-sm font-semibold mb-1">Finishers</h4>
-                        <ul className="list-disc ml-5 text-gray-600">
-                          <li>Phantom Driver</li>
-                          <li>Rising Plunge</li>
-                        </ul>
+                      <div>
+                        <p className="text-sm text-gray-500">Nombre real</p>
+                        <p className="font-semibold text-gray-700">{luchador.nombreLegal || '—'}</p>
                       </div>
-                      <div className="mt-3">
-                        <h4 className="text-sm font-semibold mb-1">Movimientos firmados</h4>
-                        <ul className="list-disc ml-5 text-gray-600">
-                          <li>Suplex invertido</li>
-                          <li>Enzuigiri</li>
-                        </ul>
+                      <div>
+                        <p className="text-sm text-gray-500">Ciudad</p>
+                        <p className="font-semibold text-gray-700">{luchador.ciudad || '—'}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">Experiencia</p>
+                        <p className="font-semibold text-gray-700">{luchador.experiencia ? `${luchador.experiencia} años` : '—'}</p>
                       </div>
                     </div>
                   </div>
@@ -304,23 +331,32 @@ export const PerfilLuchador = () => {
             </div>
 
             {!editMode ? (
-              <div className="space-y-2">
-                <div className="flex justify-between"><span className="text-sm text-gray-600">Peso</span><strong>{luchador.peso} kg</strong></div>
-                <div className="flex justify-between"><span className="text-sm text-gray-600">Estatura</span><strong>{luchador.estatura} cm</strong></div>
-                <div className="flex justify-between"><span className="text-sm text-gray-600">Edad</span><strong>{luchador.edad} años</strong></div>
+              <div className="space-y-2 text-sm">
+                {luchador.ciudad    && <div className="flex justify-between"><span className="text-gray-500">Ciudad</span><strong>{luchador.ciudad}</strong></div>}
+                {luchador.peso      && <div className="flex justify-between"><span className="text-gray-500">Peso</span><strong>{luchador.peso} kg</strong></div>}
+                {luchador.estatura  && <div className="flex justify-between"><span className="text-gray-500">Estatura</span><strong>{luchador.estatura} cm</strong></div>}
+                {luchador.edad      && <div className="flex justify-between"><span className="text-gray-500">Edad</span><strong>{luchador.edad} años</strong></div>}
+                {luchador.experiencia && <div className="flex justify-between"><span className="text-gray-500">Experiencia</span><strong>{luchador.experiencia} años</strong></div>}
+                {!luchador.ciudad && !luchador.peso && !luchador.estatura && !luchador.edad && !luchador.experiencia && (
+                  <p className="text-gray-400 text-xs italic">Sin datos. Presiona Editar para completar.</p>
+                )}
               </div>
             ) : (
               <div className="space-y-3">
-                <label className="block text-sm">Nombre Artístico</label>
-                <input value={luchador.nombre} onChange={(e)=>setLuchador({...luchador,nombre:e.target.value})} className="w-full px-3 py-2 border rounded" />
-                <label className="block text-sm">Nombre Real</label>
-                <input value={luchador.nombreLegal} onChange={(e)=>setLuchador({...luchador,nombreLegal:e.target.value})} className="w-full px-3 py-2 border rounded" />
-                <label className="block text-sm">Peso (kg)</label>
-                <input type="number" value={luchador.peso} onChange={(e)=>setLuchador({...luchador,peso: Number(e.target.value)})} className="w-full px-3 py-2 border rounded" />
-                <label className="block text-sm">Estatura (cm)</label>
-                <input type="number" value={luchador.estatura} onChange={(e)=>setLuchador({...luchador,estatura: Number(e.target.value)})} className="w-full px-3 py-2 border rounded" />
-                <label className="block text-sm">Edad</label>
-                <input type="number" value={luchador.edad} onChange={(e)=>setLuchador({...luchador,edad: Number(e.target.value)})} className="w-full px-3 py-2 border rounded" />
+                <label className="block text-sm font-medium text-gray-700">Nombre Artístico</label>
+                <input value={luchador.nombre} onChange={(e)=>setLuchador({...luchador,nombre:e.target.value})} className="w-full px-3 py-2 border rounded-lg focus:ring-2 ring-sportshausen-red outline-none" />
+                <label className="block text-sm font-medium text-gray-700">Nombre Real</label>
+                <input value={luchador.nombreLegal} onChange={(e)=>setLuchador({...luchador,nombreLegal:e.target.value})} className="w-full px-3 py-2 border rounded-lg focus:ring-2 ring-sportshausen-red outline-none" />
+                <label className="block text-sm font-medium text-gray-700">Ciudad</label>
+                <input value={luchador.ciudad} onChange={(e)=>setLuchador({...luchador,ciudad:e.target.value})} placeholder="Ej: Santiago" className="w-full px-3 py-2 border rounded-lg focus:ring-2 ring-sportshausen-red outline-none" />
+                <label className="block text-sm font-medium text-gray-700">Peso (kg)</label>
+                <input type="number" value={luchador.peso} onChange={(e)=>setLuchador({...luchador,peso: Number(e.target.value)})} className="w-full px-3 py-2 border rounded-lg focus:ring-2 ring-sportshausen-red outline-none" />
+                <label className="block text-sm font-medium text-gray-700">Estatura (cm)</label>
+                <input type="number" value={luchador.estatura} onChange={(e)=>setLuchador({...luchador,estatura: Number(e.target.value)})} className="w-full px-3 py-2 border rounded-lg focus:ring-2 ring-sportshausen-red outline-none" />
+                <label className="block text-sm font-medium text-gray-700">Edad</label>
+                <input type="number" value={luchador.edad} onChange={(e)=>setLuchador({...luchador,edad: Number(e.target.value)})} className="w-full px-3 py-2 border rounded-lg focus:ring-2 ring-sportshausen-red outline-none" />
+                <label className="block text-sm font-medium text-gray-700">Experiencia (años)</label>
+                <input type="number" value={luchador.experiencia} onChange={(e)=>setLuchador({...luchador,experiencia: Number(e.target.value)})} placeholder="Ej: 5" className="w-full px-3 py-2 border rounded-lg focus:ring-2 ring-sportshausen-red outline-none" />
               </div>
             )}
 
@@ -333,7 +369,34 @@ export const PerfilLuchador = () => {
                           <button onClick={()=>setEditMode(true)} className="flex-1 px-4 py-2 border rounded font-semibold text-sm">Editar</button>
                         ) : (
                           <>
-                            <button onClick={()=>setEditMode(false)} className="flex-1 btn-primary text-sm">Guardar</button>
+                            <button
+                              disabled={guardando}
+                              onClick={async () => {
+                                const targetId = id || myUserId;
+                                if (!targetId) { setEditMode(false); return; }
+                                setGuardando(true);
+                                try {
+                                  await usersAPI.update(targetId, {
+                                    nombre_artistico: luchador.nombre,
+                                    full_name: luchador.nombreLegal,
+                                    ciudad: luchador.ciudad,
+                                    peso: luchador.peso,
+                                    estatura: luchador.estatura,
+                                    edad: luchador.edad,
+                                    experiencia: luchador.experiencia,
+                                  });
+                                  showToast('Perfil actualizado');
+                                } catch {
+                                  showToast('Error al guardar', 'error');
+                                } finally {
+                                  setGuardando(false);
+                                  setEditMode(false);
+                                }
+                              }}
+                              className="flex-1 btn-primary text-sm disabled:opacity-50"
+                            >
+                              {guardando ? 'Guardando...' : 'Guardar'}
+                            </button>
                             <button onClick={()=>setEditMode(false)} className="flex-1 px-4 py-2 border rounded font-semibold text-sm">Cancelar</button>
                           </>
                         )
