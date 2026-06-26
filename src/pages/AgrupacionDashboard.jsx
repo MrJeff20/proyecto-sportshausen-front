@@ -10,8 +10,19 @@ import {
   aceptarPostulacion,
   rechazarPostulacion,
   agregarNotificacionLuchador,
-  addPendingCalendarMark,
 } from '../services/postulacionesService';
+
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const registrarMarcaCalendario = async (luchador_id, fechaStr, razon) => {
+  try {
+    const token = localStorage.getItem('authToken');
+    await fetch(`${API_BASE}/api/disponibilidad/pendientes`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ luchador_id, fechaStr, razon }),
+    });
+  } catch { /* no bloquear el flujo principal */ }
+};
 import { crearConversacion, enviarMensaje } from '../services/mensajeriaService';
 
 const fmtFecha = ({ date, month, year }) => {
@@ -97,11 +108,11 @@ const AgrupacionDashboard = () => {
         } catch { /* no bloquear el flujo si falla el update */ }
       }
 
-      // Registrar marca pendiente en el calendario del luchador
+      // Registrar marca en el servidor para que el luchador la vea al abrir su calendario
       if (eventoFecha) {
         const { date, month, year } = eventoFecha;
         const fechaStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`;
-        addPendingCalendarMark(
+        await registrarMarcaCalendario(
           postulacion.luchador_id,
           fechaStr,
           `Evento confirmado: ${postulacion.evento_nombre}`

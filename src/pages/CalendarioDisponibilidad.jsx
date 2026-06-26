@@ -3,7 +3,17 @@ import { ChevronLeft, ChevronRight, Check, X, Calendar, Clock, Trash2 } from 'lu
 import Header from '../components/Header';
 import SideNav from '../components/SideNav';
 import { getFechas, upsertFecha, deleteFecha } from '../services/disponibilidadService';
-import { getPendingCalendarMarks, removePendingCalendarMark } from '../services/postulacionesService';
+
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const fetchMarcasPendientes = async () => {
+  const token = localStorage.getItem('authToken');
+  const res = await fetch(`${API_BASE}/api/disponibilidad/pendientes`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) return [];
+  const json = await res.json();
+  return json.marcas || [];
+};
 
 const MONTH_NAMES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const DAY_NAMES = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
@@ -43,34 +53,29 @@ export const CalendarioDisponibilidad = () => {
           .map(item => ({ ...fromApiDate(item.fecha), reason: item.razon || '' }));
         setOccupiedDates(fechasOcupadas);
 
-        // Aplicar marcas de calendario pendientes (postulaciones aceptadas)
-        const userId = (() => {
-          try { return JSON.parse(localStorage.getItem('user') || '{}').id || localStorage.getItem('userId') || null; }
-          catch { return null; }
-        })();
-        if (userId) {
-          const pending = getPendingCalendarMarks(userId);
+        // Aplicar marcas pendientes del servidor (postulaciones aceptadas por agrupación)
+        try {
+          const pending = await fetchMarcasPendientes();
           if (pending.length > 0) {
             const nuevasFechas = [];
             for (const mark of pending) {
-              const yaExiste = fechasOcupadas.some(o => {
-                const { date, month, year } = fromApiDate(mark.fechaStr);
-                return o.date === date && o.month === month && o.year === year;
-              });
+              const parsed = fromApiDate(mark.fechaStr);
+              const yaExiste = fechasOcupadas.some(o =>
+                o.date === parsed.date && o.month === parsed.month && o.year === parsed.year
+              );
               if (!yaExiste) {
                 try {
                   await upsertFecha(mark.fechaStr, 'no_disponible', mark.razon);
-                  nuevasFechas.push({ ...fromApiDate(mark.fechaStr), reason: mark.razon });
+                  nuevasFechas.push({ ...parsed, reason: mark.razon });
                 } catch { /* continuar con las otras */ }
               }
-              removePendingCalendarMark(userId, mark.id);
             }
             if (nuevasFechas.length > 0) {
               setOccupiedDates(prev => [...prev, ...nuevasFechas]);
               showToast(`${nuevasFechas.length} evento(s) confirmado(s) marcado(s) en tu calendario`);
             }
           }
-        }
+        } catch { /* no bloquear si falla */ }
       } catch {
         showToast('No se pudo cargar tu disponibilidad', 'error');
       } finally {
