@@ -28,9 +28,9 @@ const SideNav = ({ active, onSelect, isOpen = false, setIsOpen }) => {
                           : '/dashboard/agrupacion',
       profile:              `/perfil/${localStorage.getItem('userId') || '1'}`,
       calendar:             userType === 'agrupacion' ? '/agenda/agrupacion' : '/calendario-disponibilidad',
-      events:               userType !== 'agrupacion' ? '/mis-eventos' : null,
+      events:               userType !== 'agrupacion' ? '/mis-eventos' : '/dashboard/agrupacion',
       offers:               '/ofertas',
-      postulaciones:        null,
+      postulaciones:        userType === 'agrupacion' ? '/dashboard/agrupacion' : null,
       messages:             '/mensajeria',
       notifications:        '/notificaciones',
       tickets:              '/mis-tickets',
@@ -38,10 +38,12 @@ const SideNav = ({ active, onSelect, isOpen = false, setIsOpen }) => {
     };
     const route = routes[id];
     if (route) {
-      navigate(route);
-    } else if (onSelect) {
-      onSelect(id);
+      // Para agrupacion navegando al dashboard, pasar el tab como state
+      // así AgrupacionDashboard puede abrir la sección correcta directamente
+      const state = (userType === 'agrupacion' && route === '/dashboard/agrupacion') ? { tab: id } : undefined;
+      navigate(route, state ? { state } : undefined);
     }
+    if (onSelect) onSelect(id);
   };
 
   const NavItem = ({ item, onClick }) => (

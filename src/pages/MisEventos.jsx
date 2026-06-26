@@ -23,7 +23,7 @@ const MisEventos = () => {
 
   return (
     <div className="min-h-screen bg-sportshausen-light">
-      <Header userType="luchador" isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+      <Header userType={localStorage.getItem('userType') || 'luchador'} isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
       <div className="flex pt-16 min-h-screen">
         <SideNav active="events" onSelect={() => {}} isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
 

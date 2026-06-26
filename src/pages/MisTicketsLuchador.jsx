@@ -3,7 +3,7 @@ import { misTickets, obtenerMensajes, enviarMensajeLuchador } from '../services/
 import Header from '../components/Header';
 import SideNav from '../components/SideNav';
 import Footer from '../components/Footer';
-import { AlertCircle, CheckCircle, Clock, X, Send } from 'lucide-react';
+import { AlertCircle, CheckCircle, Clock, X, Send, RefreshCw } from 'lucide-react';
 
 const ESTADO_BADGE = {
   ABIERTO: 'badge-outline',
@@ -21,6 +21,7 @@ const MisTicketsLuchador = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [errorCarga, setErrorCarga] = useState('');
   const [modalDetalle, setModalDetalle] = useState(null);
   const [mensajes, setMensajes] = useState([]);
   const [loadingMensajes, setLoadingMensajes] = useState(false);
@@ -46,12 +47,13 @@ const MisTicketsLuchador = () => {
 
   const cargarTickets = async () => {
     setLoading(true);
+    setErrorCarga('');
     try {
       const data = await misTickets();
       setTickets(data.tickets || []);
     } catch (error) {
       console.error('Error:', error);
-      showToast('Error al cargar tickets: ' + error.message, 'error');
+      setErrorCarga('No se pudieron cargar tus tickets. Verifica tu conexión.');
     } finally {
       setLoading(false);
     }
@@ -60,6 +62,7 @@ const MisTicketsLuchador = () => {
   const abrirDetalle = async (ticket) => {
     setModalDetalle(ticket);
     setTextoRespuesta('');
+    setMensajes([]);
     setLoadingMensajes(true);
     try {
       const data = await obtenerMensajes(ticket.id);
@@ -115,12 +118,28 @@ const MisTicketsLuchador = () => {
           <h1 className="text-4xl font-bold text-sportshausen-dark mb-2">Mis Tickets</h1>
           <p className="text-gray-600 mb-8">Gestiona tus consultas y seguimiento con agrupaciones</p>
 
-          {tickets.length === 0 ? (
+          {errorCarga && (
+            <div className="mb-6 px-4 py-3 bg-red-50 border border-red-200 rounded-xl flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <AlertCircle size={16} className="text-red-500 flex-shrink-0" />
+                <p className="text-sm text-red-600 font-medium">{errorCarga}</p>
+              </div>
+              <button
+                onClick={cargarTickets}
+                className="flex items-center gap-1.5 text-sm font-semibold text-red-600 hover:text-red-800 underline whitespace-nowrap"
+              >
+                <RefreshCw size={14} />
+                Reintentar
+              </button>
+            </div>
+          )}
+
+          {tickets.length === 0 && !errorCarga ? (
             <div className="text-center py-12 bg-white rounded-lg card-shadow">
               <AlertCircle size={48} className="mx-auto text-gray-400 mb-4" />
               <p className="text-gray-600">No tienes tickets aún</p>
             </div>
-          ) : (
+          ) : !errorCarga && (
             <div className="space-y-4">
               {tickets.map(ticket => (
                 <div key={ticket.id} className="bg-white rounded-xl p-5 card-shadow flex flex-col md:flex-row md:items-center md:justify-between gap-4 hover:shadow-lg transition-all">

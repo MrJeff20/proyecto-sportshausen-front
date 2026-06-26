@@ -56,6 +56,7 @@ export default function GestionarTicketsAgrupacion() {
   const [modalFinalizar, setModalFinalizar] = useState(null);
   const [finalizando, setFinalizando] = useState(false);
   const [toast, setToast] = useState(null);
+  const [errorCarga, setErrorCarga] = useState('');
 
   const showToast = (msg, type = 'success') => {
     setToast({ msg, type });
@@ -64,11 +65,12 @@ export default function GestionarTicketsAgrupacion() {
 
   const cargar = async () => {
     setLoading(true);
+    setErrorCarga('');
     try {
       const data = await ticketsAgrupacion();
       setTickets(data.tickets || []);
     } catch (error) {
-      showToast('Error al cargar solicitudes: ' + error.message, 'error');
+      setErrorCarga('No se pudieron cargar las solicitudes. Verifica tu conexión.');
     } finally {
       setLoading(false);
     }
@@ -102,6 +104,7 @@ export default function GestionarTicketsAgrupacion() {
   const abrirDetalle = async (ticket) => {
     setModalDetalle(ticket);
     setTextoChat('');
+    setMensajes([]);
     setLoadingMsg(true);
     try {
       const data = await obtenerMensajes(ticket.id);
@@ -204,11 +207,27 @@ export default function GestionarTicketsAgrupacion() {
       )}
       <Header userType="agrupacion" />
       <div className="flex pt-16 min-h-screen">
-        <SideNav active="calendar" onSelect={() => {}} />
+        <SideNav active="tickets-agrupacion" onSelect={() => {}} />
 
         <main className="flex-1 md:ml-64 p-4 md:p-8 overflow-y-auto">
           <h1 className="text-4xl font-bold text-sportshausen-dark mb-2">Gestionar Solicitudes</h1>
           <p className="text-gray-600 mb-8">Administra los tickets y consultas de los luchadores</p>
+
+          {/* Banner de error con retry */}
+          {errorCarga && (
+            <div className="mb-6 px-4 py-3 bg-red-50 border border-red-200 rounded-xl flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <AlertCircle size={16} className="text-red-500 flex-shrink-0" />
+                <p className="text-sm text-red-600 font-medium">{errorCarga}</p>
+              </div>
+              <button
+                onClick={cargar}
+                className="text-sm font-semibold text-red-600 hover:text-red-800 underline whitespace-nowrap"
+              >
+                Reintentar
+              </button>
+            </div>
+          )}
 
           {/* Filtros */}
           <div className="bg-white rounded-lg p-4 mb-8 card-shadow space-y-4">

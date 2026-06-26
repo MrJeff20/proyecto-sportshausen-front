@@ -15,8 +15,23 @@ export const AuthProvider = ({ children }) => {
     const savedUser = localStorage.getItem('user');
     const savedUserType = localStorage.getItem('userType');
 
-    if (savedToken) {
+    // Nuestro JWT tiene `xanoToken` en el payload.
+    // Si el token guardado no lo tiene, es un token antiguo de Xano → forzar re-login.
+    const isOurJWT = (() => {
+      if (!savedToken) return false;
+      try {
+        const payload = JSON.parse(atob(savedToken.split('.')[1]));
+        return !!payload.xanoToken;
+      } catch { return false; }
+    })();
+
+    if (isOurJWT) {
       setToken(savedToken);
+    } else if (savedToken) {
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('user');
+      localStorage.removeItem('userType');
+      localStorage.removeItem('userId');
     }
 
     const normalizeUser = (u) => {
@@ -57,6 +72,10 @@ export const AuthProvider = ({ children }) => {
       if (userRole === 'agrupación') userRole = 'agrupacion';
       if (!['booker', 'agrupacion', 'luchador'].includes(userRole)) userRole = 'luchador';
       userData.role = userRole;
+
+      // Limpiar notificaciones del usuario anterior antes de guardar el nuevo
+      localStorage.removeItem('sportshausen_notifs');
+      localStorage.removeItem('sportshausen_notifs_unread');
 
       // Guardar mínimo y actualizar estado
       localStorage.setItem('authToken', authToken);
@@ -154,6 +173,8 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem('user');
       localStorage.removeItem('userType');
       localStorage.removeItem('userId');
+      localStorage.removeItem('sportshausen_notifs');
+      localStorage.removeItem('sportshausen_notifs_unread');
 
       setToken(null);
       setUser(null);

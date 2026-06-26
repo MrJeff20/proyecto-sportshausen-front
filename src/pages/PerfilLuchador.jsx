@@ -146,7 +146,7 @@ export const PerfilLuchador = () => {
           {toast.type === 'error' ? '✕ ' : '✓ '}{toast.msg}
         </div>
       )}
-      <Header userType="luchador" isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+      <Header userType={localStorage.getItem('userType') || 'luchador'} isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
       <SideNav active={'profile'} onSelect={()=>{}} isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
 
       {/* Banner + Profile Header: only visible in preview mode */}

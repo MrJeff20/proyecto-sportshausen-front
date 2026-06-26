@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Calendar, CheckCircle, XCircle } from 'lucide-react';
 import Header from '../components/Header';
 import SideNav from '../components/SideNav';
 import Footer from '../components/Footer';
-import { getEventos } from '../services/eventosService';
+import { getEventos, actualizarEvento } from '../services/eventosService';
 import {
   getPostulacionesAgrupacion,
   aceptarPostulacion,
   rechazarPostulacion,
   agregarNotificacionLuchador,
+  addPendingCalendarMark,
 } from '../services/postulacionesService';
 import { crearConversacion, enviarMensaje } from '../services/mensajeriaService';
 
@@ -21,13 +22,20 @@ const fmtFecha = ({ date, month, year }) => {
 const toMs = ({ date, month, year }) => new Date(year, month, date).getTime();
 
 const AgrupacionDashboard = () => {
-  const [activeTab, setActiveTab] = useState('home');
+  const location = useLocation();
+  const [activeTab, setActiveTab] = useState(() => location.state?.tab || 'home');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [eventos, setEventos] = useState([]);
   const [postulaciones, setPostulaciones] = useState([]);
   const [procesando, setProcesando] = useState(null);
   const [toast, setToast] = useState(null);
   const navigate = useNavigate();
+
+  // Cuando React Router navega a esta página con state.tab (ej: desde SideNav),
+  // actualizar el tab activo sin necesidad de recargar
+  useEffect(() => {
+    if (location.state?.tab) setActiveTab(location.state.tab);
+  }, [location.state?.tab]);
 
   const showToast = (msg, type = 'success') => {
     setToast({ msg, type });
@@ -62,10 +70,43 @@ const AgrupacionDashboard = () => {
     setProcesando(postulacion.id);
     try {
       aceptarPostulacion(postulacion.id);
+
+      // Buscar la fecha del evento en el estado local
+      const eventoObj = eventos.find(ev => String(ev.id) === String(postulacion.evento_id));
+      const eventoFecha = eventoObj?.fecha || null;
+
+      // Notificación estructurada al luchador
       agregarNotificacionLuchador(
         postulacion.luchador_id,
-        `✅ Tu postulación al evento "${postulacion.evento_nombre}" ha sido ACEPTADA.`
+        `✅ Tu postulación al evento "${postulacion.evento_nombre}" ha sido ACEPTADA.`,
+        {
+          tipo: 'postulacion_aceptada',
+          evento_nombre: postulacion.evento_nombre,
+          evento_fecha: eventoFecha,
+        }
       );
+
+      // Descontar una vacante en Xano
+      if (eventoObj && (eventoObj.luchadores ?? 0) > 0) {
+        try {
+          const nuevasVacantes = eventoObj.luchadores - 1;
+          await actualizarEvento(eventoObj.id, { ...eventoObj, luchadores: nuevasVacantes });
+          setEventos(prev => prev.map(ev =>
+            String(ev.id) === String(eventoObj.id) ? { ...ev, luchadores: nuevasVacantes } : ev
+          ));
+        } catch { /* no bloquear el flujo si falla el update */ }
+      }
+
+      // Registrar marca pendiente en el calendario del luchador
+      if (eventoFecha) {
+        const { date, month, year } = eventoFecha;
+        const fechaStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`;
+        addPendingCalendarMark(
+          postulacion.luchador_id,
+          fechaStr,
+          `Evento confirmado: ${postulacion.evento_nombre}`
+        );
+      }
       // Enviar mensaje por mensajería
       try {
         const conv = await crearConversacion(postulacion.luchador_id);

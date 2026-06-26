@@ -5,7 +5,7 @@ import SideNav from '../components/SideNav';
 import Footer from '../components/Footer';
 import { crearTicket } from '../services/ticketService';
 import { getEventos } from '../services/eventosService';
-import { crearPostulacion } from '../services/postulacionesService';
+import { crearPostulacion, agregarNotificacionAgrupacion } from '../services/postulacionesService';
 
 const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 const fmtFecha = ({ date, month, year }) => `${date} ${meses[month]} ${year}`;
@@ -56,19 +56,28 @@ const Ofertas = () => {
   const postular = (evento) => {
     const luchadorId = localStorage.getItem('userId');
     const userData = (() => { try { return JSON.parse(localStorage.getItem('user') || '{}'); } catch { return {}; } })();
+    const luchadorNombre = userData.nombre_artistico || userData.full_name || userData.name || 'Luchador';
     try {
       crearPostulacion({
-        luchador_id:      parseInt(luchadorId) || 0,
-        luchador_nombre:  userData.nombre_artistico || userData.full_name || userData.name || 'Luchador',
-        luchador_ciudad:  userData.ciudad || '',
-        luchador_peso:    userData.peso || '',
-        luchador_estatura: userData.estatura || '',
+        luchador_id:          parseInt(luchadorId) || 0,
+        luchador_nombre:      luchadorNombre,
+        luchador_ciudad:      userData.ciudad || '',
+        luchador_peso:        userData.peso || '',
+        luchador_estatura:    userData.estatura || '',
         luchador_experiencia: userData.experiencia || '',
-        evento_id:        evento.id,
-        evento_nombre:    evento.nombre,
-        evento_fecha:     evento.fecha,
-        agrupacion_id:    evento.agrupacion_id,
+        evento_id:            evento.id,
+        evento_nombre:        evento.nombre,
+        evento_fecha:         evento.fecha,
+        agrupacion_id:        evento.agrupacion_id,
       });
+      // Notificar a la agrupación organizadora
+      if (evento.agrupacion_id) {
+        agregarNotificacionAgrupacion(
+          evento.agrupacion_id,
+          `📋 Nueva postulación de "${luchadorNombre}" para el evento "${evento.nombre}"`,
+          { tipo: 'nueva_postulacion', evento_nombre: evento.nombre, luchador_nombre: luchadorNombre }
+        );
+      }
       setPostulados(prev => [...prev, evento.id]);
       showToast('¡Postulación enviada! La agrupación revisará tu perfil.');
     } catch (err) {
@@ -111,7 +120,7 @@ const Ofertas = () => {
           {toast.type === 'error' ? '✕ ' : '✓ '}{toast.msg}
         </div>
       )}
-      <Header userType="luchador" isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+      <Header userType={localStorage.getItem('userType') || 'luchador'} isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
       <div className="flex pt-16 min-h-screen">
         <SideNav active="offers" onSelect={() => {}} isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
 
@@ -186,7 +195,7 @@ const Ofertas = () => {
                         </button>
                       )}
                       <button
-                        onClick={() => abrirTicket({ id: ev.id, org: ev.nombre, org_id: ev.id })}
+                        onClick={() => abrirTicket({ id: ev.id, org: ev.nombre, org_id: ev.agrupacion_id })}
                         className="btn-outline text-sm px-3 py-2 whitespace-nowrap"
                         title="Enviar una consulta sobre este evento"
                       >
